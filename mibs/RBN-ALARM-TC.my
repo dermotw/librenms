@@ -1,0 +1,233 @@
+-- *****************************************************************
+-- RBN-ALARM-TC         RedBack Alarms Textual Convention MIB
+--
+-- Copyright (c) 2004 RedBack Networks, Inc.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+   RBN-ALARM-TC DEFINITIONS ::= BEGIN
+
+   IMPORTS
+      MODULE-IDENTITY
+                FROM SNMPv2-SMI
+      TEXTUAL-CONVENTION
+                FROM SNMPv2-TC
+      rbnModules
+                FROM RBN-SMI;
+
+     rbnAlarmTc MODULE-IDENTITY
+         LAST-UPDATED "200406220000Z" -- Jun 22, 2004
+         ORGANIZATION "RedBack Networks, Inc."
+         CONTACT-INFO
+                "       RedBack Networks, Inc.
+
+                Postal: 300 Holger Way
+                        San Jose, CA  95134
+                        USA
+
+                 Phone: +1 408 750 5000
+                   Fax: +1 408 750 5599
+
+                E-mail: mib-info@redback.com"
+        DESCRIPTION
+            "This MIB module defines the Alarm textual
+            conventions."
+        REVISION        "200406220000Z" -- Jun 22, 2004
+        DESCRIPTION
+                "Initial version"
+        ::= {rbnModules 3}
+
+
+    RbnAlarmId ::= TEXTUAL-CONVENTION
+        STATUS  current
+        DESCRIPTION
+                "Redback Alarm Identifier values"
+        SYNTAX  INTEGER {
+                unknown(1),
+                cpFail(2),                      -- circuit pack failure
+                cpBackplaneFail(3),             -- circuit pack backplane failure
+                diagFail(4),                    -- diagnostic failure
+                voltageFail(5),                 -- voltage failure
+                controllerSwitchFail(6),        -- controller switch failure
+                controllerTempCritical(7),      -- controller temp critical
+                controllerFail(8),              -- controller failure
+                controllerDiagFail(9),          -- controller diag test failure
+                cpPowerOnDiagFail(10),          -- circuit pack power-on 
+                                                -- diagnostic failure
+                controllerPowerOnDiagFail(11)   -- controller power-on 
+                                                -- diagnostic failure 
+                }
+
+   RbnAlarmType ::= TEXTUAL-CONVENTION
+       STATUS   current
+       DESCRIPTION
+                "Redback Alarm Type values.
+
+                These values were extracted from the IANAItuEventType
+                textual convention."
+       REFERENCE
+                "draft-ietf-disman-alarm-mib-15.txt, Disman Working Group,
+                   September 2003"
+       SYNTAX   INTEGER {
+                other (1),
+                communicationsAlarm (2),
+                qualityOfServiceAlarm (3),
+                processingErrorAlarm (4),
+                equipmentAlarm (5),
+                environmentalAlarm (6),
+                integrityViolation (7),
+                operationalViolation (8),
+                physicalViolation (9),
+                securityServiceOrMechanismViolation (10),
+                timeDomainViolation (11)
+              }
+
+   RbnAlarmPerceivedSeverity ::= TEXTUAL-CONVENTION
+       STATUS   current
+       DESCRIPTION
+                "Redback perceived severity values"
+       SYNTAX   INTEGER {
+                cleared (1),
+                critical (2),
+                major (3),
+                minor (4),
+                warning (5)
+              }
+
+   RbnAlarmProbableCause ::= TEXTUAL-CONVENTION
+       STATUS   current
+       DESCRIPTION
+                "Redback probable cause values.
+
+                These values were extracted from the IANAItuProbableCause
+                textual convention."
+       REFERENCE
+                "draft-ietf-disman-alarm-mib-15.txt, Disman Working Group,
+                   September 2003"
+       SYNTAX   INTEGER {
+               -- The following probable causes were defined in M.3100
+                aIS (1),
+                degradedSignal (3),
+                farEndReceiverFailure (4),
+                framingError (5),
+                lossOfFrame (6),
+                lossOfPointer (7),
+                lossOfSignal (8),
+                payloadTypeMismatch (9),
+                transmissionError (10),
+                excessiveBER (12),
+                pathTraceMismatch (13),
+                unavailable (14),
+                signalLableMismatch (15),
+                receiveFailure (17),
+                transmitFailure (18),
+                modulationFailure (19),
+                demodulationFailure (20),
+                linkFailure (21),
+                configurationMismatch (22),
+                concatenationMismatch (23),
+    --Values 27-50 are reserved for communications alarm related
+    --probable causes
+    -- The following are used with equipment alarm.
+                backplaneFailure (51),
+                equipmentIdDuplication (53),
+                externalIFDeviceProblem (54),
+                lineCardProblem (55),
+                multiplexerProblem (56),
+                nEIdentifierDuplication (57),
+                powerProblem (58),
+                processorProblem (59),
+                protectionPathFailure (60),
+                receiverFailure (61),
+                replaceableUnitMissing (62),
+                replaceableUnitTypeMismatch (63),
+                syncSourceMismatch (64),
+                terminalProblem (65),
+                timingProblem (66),
+                transmitterFailure (67),
+                trunkCardProblem (68),
+                replaceableUnitProblem (69),
+                realTimeClockFailure (70),
+    -- Values 83-100 are reserved for equipment alarm related probable
+    -- causes
+    -- The following are used with environmental alarm.
+                airCompressorFailure (101),
+                airConditioningFailure (102),
+                airDryerFailure (103),
+                batteryDischarging (104),
+                batteryFailure (105),
+                commercialPowerFailure (106),
+                coolingFanFailure (107),
+                engineFailure (108),
+                fireDetectorFailure (109),
+                fuseFailure (110),
+                generatorFailure (111),
+                lowBatteryThreshold (112),
+                pumpFailure (113),
+                rectifierFailure (114),
+                rectifierHighVoltage (115),
+                rectifierLowVoltage (116),
+                ventilationsSystemFailure (117),
+                enclosureDoorOpen (118),
+                explosiveGas (119),
+                fire (120),
+                flood (121),
+                highHumidity (122),
+                highTemperature (123),
+                highWind (124),
+                iceBuildUp (125),
+                intrusionDetection (126),
+                lowFuel (127),
+                lowHumidity (128),
+                lowCablePressure (129),
+                lowTemperature (130),
+                lowWater (131),
+                smoke (132),
+                toxicGas (133),
+    -- Values 137-150 are reserved for environmental alarm related
+    -- probable causes
+                customized (149),
+    -- The following are used with Processing error alarm.
+                storageCapacityProblem (151),
+                memoryMismatch (152),
+                corruptData (153),
+                outOfCPUCycles (154),
+                sfwrEnvironmentProblem (155),
+                sfwrDownloadFailure (156),
+                lossOfRealTime (157),
+    --A processing error alarm to be issued after the system has
+    --reinitialised. This will indicate
+    --to the management systems that the view they have of the managed
+    --system may no longer
+    --be valid. Usage example: The managed
+    --system issues this alarm after a reinitialization with severity
+    --warning to inform the
+    --management system about the event. No clearing notification will
+    --be sent.
+                reinitialized (158),
+                operationNotification (159),
+                operationFailure (160),
+    --Values 168-200 are reserved for processing error alarm related
+    -- probable causes.
+                lossOfTimingSource (1001),
+                apsChannelProcessingFailure (1002),
+                apsByteFailure (1003),
+                apsChannelMatchFailure (1004),
+                apsModeMismatch (1005),
+                lossOfTUMultiframeIndicator (1007),
+                pathSelectorFailure (1010),
+                blsrDefaultKBytes (1011),
+                blsrInconsistentAPSCodes (1012),
+                blsrNodeIdMismatch (1013),
+                blsrImproperAPSCodes (1014),
+                blsrSquelching (1015),
+                blsrInvalidNeighbour (1016),
+                blsrInvalidRingMap (1017),
+                blsrInvalidRingId (1018),
+                blsrIncompleteRingConfig (1019),
+                blsrIncompleteETConfig (1020),
+                blsrNodeIncorrectOrientation (1021)
+              }
+
+END

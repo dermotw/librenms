@@ -1,0 +1,475 @@
+-- *****************************************************************
+-- RBN-SYS-RESOURCES-MIB    Redback System Resources MIB
+--
+-- Copyright (c) 2002-2003 RedBack Networks, Inc.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+RBN-SYS-RESOURCES-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+        MODULE-IDENTITY,
+        NOTIFICATION-TYPE,
+        OBJECT-TYPE,
+        Unsigned32,
+        Integer32,
+        TimeTicks
+                FROM SNMPv2-SMI
+        TruthValue 
+                FROM SNMPv2-TC
+        MODULE-COMPLIANCE,
+        OBJECT-GROUP,
+        NOTIFICATION-GROUP
+                FROM SNMPv2-CONF
+        SnmpAdminString
+                FROM SNMP-FRAMEWORK-MIB
+        RbnKBytes,
+                RbnPercentage
+                FROM RBN-TC
+        rbnMgmt
+                FROM RBN-SMI;
+
+rbnSysResourcesMib MODULE-IDENTITY
+        LAST-UPDATED    "200309021800Z" -- Sept 2, 2003, 1800Z
+        ORGANIZATION    "RedBack Networks, Inc."
+        CONTACT-INFO
+                "       RedBack Networks, Inc.
+
+                Postal: 300 Holger Way
+                        San Jose, CA  95134-1362
+                        USA
+
+                 Phone: +1 408 750 5000
+                   Fax: +1 408 750 5599
+
+                E-mail: mib-info@redback.com"
+        DESCRIPTION
+                "The management information definitions for the
+                system resources management of a Redback network 
+                device.  This MIB is viewable under all contexts."
+
+        REVISION        "200309021800Z" -- Sept 2, 2003, 1800Z
+        DESCRIPTION
+                "Add notification rbnSRSwitchoverEvent,
+                 rbnSRMIBCompliance2 and
+                 rbnSRNotificationGroup."
+
+        REVISION        "200210100000Z" -- October 10, 2002
+        DESCRIPTION
+                "Add new enumerations to rbnSRProcessNotifyEventCause."
+
+        REVISION        "200206040000Z" -- June 4, 2002
+        DESCRIPTION
+                "Initial version."
+
+        ::= { rbnMgmt 24 }
+
+rbnSRMIBNotifications   OBJECT IDENTIFIER ::= { rbnSysResourcesMib 0 }
+
+rbnSRMIBObjects         OBJECT IDENTIFIER ::= { rbnSysResourcesMib 1 }
+
+rbnSRMIBConformance     OBJECT IDENTIFIER ::= { rbnSysResourcesMib 2 }
+
+-- the Process Group
+
+rbnSRProcess            OBJECT IDENTIFIER ::= { rbnSRMIBObjects 1 }
+
+-- Process event notification information 
+
+rbnSRProcessNotifyLastUpdate OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The value of sysUpTime when an entry in the 
+                rbnSRProcessNotifyTable was last added.  Because
+                this table is likely to contain many entries, polling
+                of this object allows a management station to determine 
+                when re-downloading of the table might be useful."
+        ::= { rbnSRProcess 1 }
+
+rbnSRProcessEventNotifyEnable    OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        enabled(1),
+                        disabled(2)
+                    }
+        MAX-ACCESS  read-write
+        STATUS      current
+        DESCRIPTION
+                "Indicates whether rbnSRProcessEvent notification should
+                be generated for this system."
+        DEFVAL  { enabled }
+        ::= { rbnSRProcess 2 }
+
+rbnSRProcessNotifyTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RbnSRProcessNotifyEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A list of process event notifications since the agent
+                was last re-initialized.  If no process event has ever
+                been generated, this table is empty, i.e., has zero
+                entries." 
+        ::= { rbnSRProcess 3 }
+
+rbnSRProcessNotifyEntry OBJECT-TYPE
+        SYNTAX      RbnSRProcessNotifyEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "Information about a death/birth process event 
+                notification which was last generated on the particular 
+                process."
+        INDEX { rbnSRProcessNotifyProcName }
+        ::= { rbnSRProcessNotifyTable 1 }
+
+RbnSRProcessNotifyEntry ::= 
+        SEQUENCE {
+                rbnSRProcessNotifyProcName      SnmpAdminString,
+                rbnSRProcessNotifyPID           Unsigned32, 
+                rbnSRProcessNotifyEventCause    INTEGER,
+                rbnSRProcessNotifyEventType     INTEGER, 
+                rbnSRProcessNumOfSpawn          Unsigned32,
+                rbnSRProcessNotifyLastTimeSent  TimeTicks
+        }
+       
+rbnSRProcessNotifyProcName OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (1..64))
+        MAX-ACCESS  not-accessible 
+        STATUS      current
+        DESCRIPTION
+                "A human readable name identifying a particular
+                process in the system."
+        ::= { rbnSRProcessNotifyEntry 1 }
+
+rbnSRProcessNotifyPID OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "A decimal number uniquely identifies the process.  The 
+                value 0 indiates the process has not been started."
+        ::= { rbnSRProcessNotifyEntry 2 }
+
+rbnSRProcessNotifyEventCause OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        firstStart(1),
+                        hangup(2),
+                        interrupt(3),
+                        quit(4),
+                        illegalInstruction(5),
+                        traceTrap(6),
+                        abort(7),
+                        emt(8),
+                        floatingPointException(9),
+                        kill(10),
+                        busError(11),
+                        segmentFault(12),
+                        systemCallError(13),
+                        pipeError(14),
+                        alarmClock(15),
+                        softwareTermination(16),
+                        urgentConditionOnIOChannel(17),
+                        stopNotFromTty(18),
+                        stopFromTty(19),
+                        continueStopped(20),
+                        childExit(21),
+                        ttyInput(22),
+                        ttyOutput(23),
+                        inputOutput(24),
+                        exceededCpuTime(25),
+                        exceededFileSize(26),
+                        virtualAlarm(27),
+                        profilingAlarm(28),
+                        windowResize(29),
+                        infoRequest(30),
+                        userDefined1(31),
+                        userDefined2(32),
+                        powerFailRestart(33),
+                        unknown(34)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This identifies the cause of a process death/birth event.
+                The value firstStart(1) indicates the process has been
+                started the first time.  The other values identifies the
+                process exit status recorded on the last process death
+                event.  On the SmartEdge platform, these values correspond
+                1-to-1 with the values displayed by the 'show process 
+                crash-info' CLI command."
+        ::= { rbnSRProcessNotifyEntry 3 }
+
+rbnSRProcessNotifyEventType OBJECT-TYPE
+        SYNTAX      INTEGER {
+                        death(1),
+                        birth(2)
+                    }
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The type of event notification sent on the process 
+                described by this row of the table.  The process
+                event type death(1) indicates that the agent has been 
+                informed that the process is not available for any use. 
+                The event type birth(2) indicates that the agent has 
+                been informed that the process has been started."
+        ::= { rbnSRProcessNotifyEntry 4 }
+
+rbnSRProcessNumOfSpawn OBJECT-TYPE
+        SYNTAX      Unsigned32 (0..2147483647)
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The number of times the process has been spawned since
+                the system was last initialized.  Note that this is 
+                different from the restart of the network management
+                portion of the system."
+        ::= { rbnSRProcessNotifyEntry 5 }
+
+rbnSRProcessNotifyLastTimeSent OBJECT-TYPE
+        SYNTAX      TimeTicks
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The value of sysUpTime at the time this notification was
+                last generated on the process."
+        ::= { rbnSRProcessNotifyEntry 6 }
+
+-- Storage Group
+
+rbnSRStorage            OBJECT IDENTIFIER ::= { rbnSRMIBObjects 2 }
+
+-- Storage Usage Table
+
+rbnSRStorageTable OBJECT-TYPE
+        SYNTAX      SEQUENCE OF RbnSRStorageEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "The (conceptual) table of long-term storage devices
+                contained by the system.  In particular, disk devices
+                accessed remotely over a network are not included
+                here."
+        ::= { rbnSRStorage 1 }
+
+rbnSRStorageEntry OBJECT-TYPE
+        SYNTAX      RbnSRStorageEntry
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A (conceptual) entry for one long-term storage device
+                contained by the system."
+        INDEX { rbnSRStorageIndex }
+        ::= { rbnSRStorageTable 1 }
+
+RbnSRStorageEntry ::= 
+        SEQUENCE {
+                rbnSRStorageIndex           Integer32,
+                rbnSRStorageDescr           SnmpAdminString,
+                rbnSRStorageMedia           INTEGER,
+                rbnSRStorageRemoveable      TruthValue,
+                rbnSRStorageSize            RbnKBytes,
+                rbnSRStorageUtilization     RbnPercentage
+        }
+
+rbnSRStorageIndex OBJECT-TYPE
+        SYNTAX      Integer32 (1..2147483647)
+        MAX-ACCESS  not-accessible
+        STATUS      current
+        DESCRIPTION
+                "A unique value for each long-term storage device 
+                contained by the system.  The value for each physical 
+                storage device must remain constant at least from one 
+                re-initialization of the agent to the next 
+                re-initialization."
+        ::= { rbnSRStorageEntry 1 }
+
+rbnSRStorageDescr OBJECT-TYPE
+        SYNTAX      SnmpAdminString (SIZE (0..64))
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "A textual description of this storage device, optionally 
+                including the device's manufacturer, revision, and its 
+                serial number."
+        ::= { rbnSRStorageEntry 2 }
+
+rbnSRStorageMedia OBJECT-TYPE 
+        SYNTAX      INTEGER { 
+                        other(1), 
+                        hardDisk(2), 
+                        flashMemory(3) 
+                    } 
+        MAX-ACCESS  read-only 
+        STATUS      current 
+        DESCRIPTION 
+                "An indication of the type of media used in this long-term
+                storage device." 
+        ::= { rbnSRStorageEntry 3 } 
+
+rbnSRStorageRemoveable OBJECT-TYPE
+        SYNTAX      TruthValue
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "Denotes whether or not the storage media may be removed
+                from the drive/slot."
+        ::= { rbnSRStorageEntry 4 }
+
+rbnSRStorageSize OBJECT-TYPE
+        SYNTAX      RbnKBytes
+        UNITS       "KBytes"
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "The total size for this long-term storage device. If the
+                media is removeable and is currently removed, this value 
+                should be zero."
+        ::= { rbnSRStorageEntry 5 }
+
+rbnSRStorageUtilization OBJECT-TYPE
+        SYNTAX      RbnPercentage
+        MAX-ACCESS  read-only
+        STATUS      current
+        DESCRIPTION
+                "This object is the percent utilization of the storage 
+                space on a scale of 0 to 100 percent.  The formula used 
+                to calculate the Utilization is as follows.
+
+                                           used blocks * 100
+                Utilization = ---------------------------------------------
+                               free blocks avail to the user + used blocks
+
+                Note that the divisor is the total number of blocks 
+                available to the user which is a subset of the total 
+                storage size on the device in rbnSRStorageSize."
+        ::= { rbnSRStorageEntry 6 }
+
+-- Notifications related to system resources management
+
+rbnSRProcessEvent NOTIFICATION-TYPE
+        OBJECTS { rbnSRProcessNotifyPID,
+                  rbnSRProcessNotifyEventCause,
+                  rbnSRProcessNotifyEventType,
+                  rbnSRProcessNumOfSpawn }
+        STATUS      current
+        DESCRIPTION
+                "This notification is sent each time the agent is informed of 
+                a process death/birth event."
+        ::= { rbnSRMIBNotifications 1 }
+
+rbnSRSwitchoverEvent NOTIFICATION-TYPE
+        STATUS      current
+        DESCRIPTION
+                "This notification identifies when a switchover 
+                occurs from one main processor module to a backup."
+        ::= { rbnSRMIBNotifications 2 }
+
+-- Conformance Statements
+
+rbnSRMIBCompliances     OBJECT IDENTIFIER ::= { rbnSRMIBConformance 1 }
+
+rbnSRMIBGroups          OBJECT IDENTIFIER ::= { rbnSRMIBConformance 2 }
+
+-- compliance Statements
+
+rbnSRMIBCompliance MODULE-COMPLIANCE
+        STATUS      obsolete
+        DESCRIPTION
+                "The requirements for conformance to the Redback System
+                Resources MIB.  
+                
+                rbnSRMIBCompliance2 replaces this compliance."
+        MODULE -- this module
+            
+        OBJECT      rbnSRProcessEventNotifyEnable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+                "Write access is not required."
+
+        GROUP rbnSRProcessNotifyGroup
+        DESCRIPTION
+                "Implementation of this group is mandatory for devices that
+                are capable of tracking process event notifications."
+
+        GROUP rbnSRStorageGroup
+        DESCRIPTION
+                "Implementation of this group is mandatory for devices that
+                are capable of reporting storage utilization."
+
+        GROUP rbnSRProcessEventNotificationGroup
+        DESCRIPTION
+                "Implementation of this group is mandatory only when the 
+                rbnSRProcessNotifyGroup is implemented."
+        ::= { rbnSRMIBCompliances 1 }
+
+-- units of conformance
+
+rbnSRProcessNotifyGroup OBJECT-GROUP
+        OBJECTS { rbnSRProcessNotifyLastUpdate,
+                  rbnSRProcessEventNotifyEnable,
+                  rbnSRProcessNotifyPID,
+                  rbnSRProcessNotifyEventCause,
+                  rbnSRProcessNotifyEventType,
+                  rbnSRProcessNumOfSpawn,
+                  rbnSRProcessNotifyLastTimeSent }
+        STATUS      current
+        DESCRIPTION
+                "A collection of objects prividing for remote monitoring 
+                of the system process event notification."
+        ::= { rbnSRMIBGroups 1 }
+
+rbnSRStorageGroup OBJECT-GROUP
+        OBJECTS { rbnSRStorageDescr,
+                  rbnSRStorageMedia,
+                  rbnSRStorageRemoveable,
+                  rbnSRStorageSize,
+                  rbnSRStorageUtilization }
+        STATUS      current
+        DESCRIPTION
+                "The System Resources Storage Group."
+        ::= { rbnSRMIBGroups 2 }
+
+rbnSRProcessEventNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { rbnSRProcessEvent }
+        STATUS      obsolete
+        DESCRIPTION
+                "A collection of notifications that may be implemented
+                for managing the system process.
+                
+                Replaced by rbnSRNotificationGroup2."
+        ::= { rbnSRMIBGroups 3 }
+        
+rbnSRMIBCompliance2 MODULE-COMPLIANCE
+        STATUS      current
+        DESCRIPTION
+                "The requirements for conformance to the Redback System
+                Resources MIB."
+        MODULE -- this module
+            MANDATORY-GROUPS {
+                rbnSRProcessNotifyGroup,
+                rbnSRNotificationGroup }
+
+        OBJECT      rbnSRProcessEventNotifyEnable
+        MIN-ACCESS  read-only
+        DESCRIPTION
+                "Write access is not required."
+            
+        GROUP rbnSRStorageGroup
+        DESCRIPTION
+                "Implementation of this group is mandatory for devices that
+                are capable of reporting storage utilization."
+
+        ::= { rbnSRMIBCompliances 2 }
+
+rbnSRNotificationGroup NOTIFICATION-GROUP
+        NOTIFICATIONS { rbnSRProcessEvent, 
+                        rbnSRSwitchoverEvent }
+        STATUS      current
+        DESCRIPTION
+                "A collection of notifications that are implemented
+                for managing the system processes."
+        ::= { rbnSRMIBGroups 4 }
+END

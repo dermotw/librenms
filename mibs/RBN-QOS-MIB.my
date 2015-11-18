@@ -1,0 +1,502 @@
+-- *****************************************************************
+-- RBN-QOS-MIB
+--
+-- Copyright (c) 2002-2003 RedBack Networks, Inc.
+-- All rights reserved.
+--
+-- *****************************************************************
+
+RBN-QOS-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+    ifIndex
+            FROM IF-MIB
+    Counter32,
+    Counter64,
+    MODULE-IDENTITY,
+    OBJECT-TYPE,
+    Unsigned32
+            FROM SNMPv2-SMI
+
+    MODULE-COMPLIANCE,
+    OBJECT-GROUP
+            FROM SNMPv2-CONF
+
+    rbnMgmt
+            FROM RBN-SMI;
+
+
+rbnQosMib MODULE-IDENTITY
+    LAST-UPDATED "200307180000Z" -- July 18, 2003
+    ORGANIZATION "Redback Networks, Inc."
+    CONTACT-INFO
+        "               RedBack Networks, Inc.
+                Postal: 300 Holger Way
+                        San Jose, CA  95134
+                        USA
+
+                 Phone: +1 408 750 5000
+                   Fax: +1 408 750 5599
+
+                E-mail: mib-info@redback.com
+        "
+    DESCRIPTION
+        "This MIB defines statistical counters that may be used
+         to monitor those IF-MIB layers which support ifPacketGroup, 
+         ifHCPacketGroup or ifVHCPacketGroup, and have Quality Of Service 
+         enabled.
+        "
+    REVISION      "200307180000Z" -- July 18, 2003
+    DESCRIPTION
+        "Added a new table rbnQosInterfaceQueueStatsTable to monitor the
+         qos statistics per transmit queue on an interface.
+        "
+    REVISION      "200203220000Z" -- March 22, 2002
+    DESCRIPTION
+        "Initial version."
+    ::= { rbnMgmt 22 }
+
+
+rbnQosMibObjects
+        OBJECT IDENTIFIER ::= { rbnQosMib 1 }
+
+rbnQosMibConformance
+        OBJECT IDENTIFIER ::= { rbnQosMib 2 }
+
+rbnQosInterfaceTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RbnQosInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table contains entries for every packet oriented 
+         IF-MIB layer for which QOS is enabled."
+    ::= { rbnQosMibObjects 1 }
+
+rbnQosInterfaceEntry OBJECT-TYPE
+    SYNTAX      RbnQosInterfaceEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row in the rbnQosInterfaceTable."
+    INDEX { ifIndex }
+    ::= { rbnQosInterfaceTable 1 }
+    
+RbnQosInterfaceEntry ::= SEQUENCE {
+    rbnQosIfInOctets            Counter32,
+    rbnQosIfHCInOctets          Counter64,
+    rbnQosIfOutOctets           Counter32,
+    rbnQosIfHCOutOctets         Counter64,
+    rbnQosIfInDroppedOctets     Counter32,
+    rbnQosIfHCInDroppedOctets   Counter64,
+    rbnQosIfOutDroppedOctets    Counter32,
+    rbnQosIfHCOutDroppedOctets  Counter64
+}
+
+rbnQosIfInOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of post-limited octets received on the interface,
+            including framing characters.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 1}
+
+rbnQosIfHCInOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of post-limited octets received on the interface,
+            including framing characters.  This object is 64-bit version of
+            rbnQosIfInOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 2}
+
+rbnQosIfOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of pre-limited octets transmitted out of the
+            interface, including framing characters.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 3}
+
+rbnQosIfHCOutOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of pre-limited octets transmitted out of the
+            interface, including framing characters.  This object is a
+            64-bit version of rbnQosIfOutOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 4 }
+
+rbnQosIfInDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of received octets that were dropped on the 
+            interface, including but not limited to octets dropped due to 
+            limiting.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 5 }
+
+rbnQosIfHCInDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of received octets that were dropped on the 
+            interface, including but not limited to octets dropped due to 
+            limiting. This object is a 64-bit version of 
+            rbnQosIfInDroppedOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 6 }
+
+
+rbnQosIfOutDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of outbound octets that were dropped on the 
+            interface, including but not limited to octets dropped due to 
+            limiting.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 7 }
+
+rbnQosIfHCOutDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The total number of outbound octets that were dropped on the 
+            interface, including but not limited to octets dropped due to 
+            limiting. This object is a 64-bit version of 
+            rbnQosIfOutDroppedOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceEntry 8 }
+
+rbnQosInterfaceQueueStatsTable   OBJECT-TYPE
+    SYNTAX      SEQUENCE OF RbnQosInterfaceQueueStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "This table specifies per transmit queue statistical information.
+         It contains the transmit queue packet/octet counts for each
+         packet oriented IF-MIB layer for which QOS is enabled."
+    ::= { rbnQosMibObjects 2 }
+
+rbnQosInterfaceQueueStatsEntry OBJECT-TYPE
+    SYNTAX      RbnQosInterfaceQueueStatsEntry
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+        "A conceptual row in the rbnQosInterfaceQueueStatsTable. Each row
+         contains the transmitted and dropped packets/octets count for
+         each transmit queue on an interface."
+    INDEX { ifIndex, rbnQosIfQueueId }
+    ::= { rbnQosInterfaceQueueStatsTable 1 }
+    
+RbnQosInterfaceQueueStatsEntry ::= SEQUENCE {
+    rbnQosIfQueueId                     Unsigned32,
+    rbnQosIfQueueOutOctets              Counter32,
+    rbnQosIfQueueOutPkts                Counter32,
+    rbnQosIfQueueWredDroppedOctets      Counter32,
+    rbnQosIfQueueWredDroppedPkts        Counter32,
+    rbnQosIfQueueTailDroppedOctets      Counter32,
+    rbnQosIfQueueTailDroppedPkts        Counter32,
+    rbnQosIfQueueHCOutOctets            Counter64,
+    rbnQosIfQueueHCOutPkts              Counter64,
+    rbnQosIfQueueHCWredDroppedOctets    Counter64,
+    rbnQosIfQueueHCWredDroppedPkts      Counter64,
+    rbnQosIfQueueHCTailDroppedOctets    Counter64,
+    rbnQosIfQueueHCTailDroppedPkts      Counter64
+}
+
+rbnQosIfQueueId OBJECT-TYPE
+    SYNTAX      Unsigned32 (0..4294967295)
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+           "A unique identifier for a transmit queue within an
+            interface."
+    ::= { rbnQosInterfaceQueueStatsEntry 1}
+
+rbnQosIfQueueOutOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets transmitted out of this queue.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 2}
+
+rbnQosIfQueueOutPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets transmitted out of this queue.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 3}
+
+rbnQosIfQueueWredDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets dropped due to the application of a
+            weighted random early detection algorithm.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 4}
+
+rbnQosIfQueueWredDroppedPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets dropped due to the application of a
+            weighted random early detection algorithm.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 5}
+
+rbnQosIfQueueTailDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets dropped when the total number of packets
+            in this queue was greater than the maximum threshold.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 6}
+
+rbnQosIfQueueTailDroppedPkts OBJECT-TYPE
+    SYNTAX      Counter32
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets dropped when the total number of
+            packets in this queue was greater than the maximum threshold.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 7}
+
+rbnQosIfQueueHCOutOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets transmitted out of this queue. This
+            object is a 64-bit version of rbnQosIfQueueOutOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 8}
+
+rbnQosIfQueueHCOutPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets transmitted out of this queue. This
+            object is a 64-bit version of rbnQosIfQueueOutPkts.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 9}
+
+rbnQosIfQueueHCWredDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets dropped due to the application of a
+            weighted random early detection algorithm. This object is
+            a 64-bit version of rbnQosIfQueueWredDroppedOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 10}
+
+rbnQosIfQueueHCWredDroppedPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets dropped due to the application of a
+            weighted random early detection algorithm. This object is
+            a 64-bit version of rbnQosIfQueueWredDroppedPkts.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 11}
+
+rbnQosIfQueueHCTailDroppedOctets OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of octets dropped when the total number of packets
+            in this queue was greater than the maximum threshold. This
+            object is a 64-bit version of rbnQosIfQueueTailDroppedOctets.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 12}
+
+rbnQosIfQueueHCTailDroppedPkts OBJECT-TYPE
+    SYNTAX      Counter64
+    MAX-ACCESS  read-only
+    STATUS      current
+    DESCRIPTION
+           "The number of packets dropped when the total number of
+            packets in this queue was greater than the maximum
+            threshold. This object is a 64-bit version of
+            rbnQosIfQueueTailDroppedPkts.
+
+            Discontinuities in the value of this counter can occur at
+            re-initialization of the management system, and at other
+            times as indicated by the value of
+            ifCounterDiscontinuityTime."
+    ::= { rbnQosInterfaceQueueStatsEntry 13}
+
+
+-- compliance statements
+
+rbnQosCompliances
+        OBJECT IDENTIFIER ::= { rbnQosMibConformance 1 }
+rbnQosGroups
+        OBJECT IDENTIFIER ::= { rbnQosMibConformance 2 }
+
+rbnQosCompliance MODULE-COMPLIANCE
+    STATUS  deprecated
+    DESCRIPTION
+        "The compliance statement for SNMP entities which implement
+         the Redback QOS MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            rbnQosIfGroup
+        }
+    ::= { rbnQosCompliances  1 }
+
+rbnQosCompliance2 MODULE-COMPLIANCE
+    STATUS  current
+    DESCRIPTION
+        "The compliance statement for SNMP entities which implement
+         the Redback QOS MIB."
+    MODULE  -- this module
+        MANDATORY-GROUPS {
+            rbnQosIfGroup,
+            rbnQosIfQueueGroup
+        }
+    ::= { rbnQosCompliances  2 }
+
+rbnQosIfGroup OBJECT-GROUP
+    OBJECTS {
+        rbnQosIfInOctets,
+        rbnQosIfHCInOctets,
+        rbnQosIfOutOctets,
+        rbnQosIfHCOutOctets,
+        rbnQosIfInDroppedOctets,
+        rbnQosIfHCInDroppedOctets,
+        rbnQosIfOutDroppedOctets,
+        rbnQosIfHCOutDroppedOctets
+    }
+    STATUS    current
+    DESCRIPTION
+        "The collection of objects which allow monitoring of interfaces
+         with QOS enabled."
+    ::= { rbnQosGroups 1 }
+
+rbnQosIfQueueGroup OBJECT-GROUP
+    OBJECTS {
+        rbnQosIfQueueOutOctets,
+        rbnQosIfQueueHCOutOctets,
+        rbnQosIfQueueOutPkts,
+        rbnQosIfQueueHCOutPkts,
+        rbnQosIfQueueWredDroppedOctets,
+        rbnQosIfQueueHCWredDroppedOctets,
+        rbnQosIfQueueWredDroppedPkts,
+        rbnQosIfQueueHCWredDroppedPkts,
+        rbnQosIfQueueTailDroppedOctets,
+        rbnQosIfQueueHCTailDroppedOctets,
+        rbnQosIfQueueTailDroppedPkts,
+        rbnQosIfQueueHCTailDroppedPkts
+    }
+    STATUS    current
+    DESCRIPTION
+        "The collection of objects which allow monitoring of transmit
+         queues on interfaces with QOS enabled."
+    ::= { rbnQosGroups 2 }
+
+END

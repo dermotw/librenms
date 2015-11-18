@@ -1,0 +1,1235 @@
+-- *****************************************************************
+-- RBN-PRODUCT-MIB	RedBack Networks Product and Entity Assignments
+--
+-- Copyright (c) 1998-2004 RedBack Networks, Inc.
+-- All rights reserved.
+-- 
+-- *****************************************************************
+
+RBN-PRODUCT-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	MODULE-IDENTITY,
+	OBJECT-IDENTITY
+		FROM SNMPv2-SMI
+	rbnModules,
+	rbnProducts,
+	rbnEntities
+		FROM RBN-SMI;
+
+rbnProductMIB MODULE-IDENTITY
+	LAST-UPDATED    "200405110000Z" -- May 11, 2004
+	ORGANIZATION	"RedBack Networks, Inc."
+	CONTACT-INFO
+		"	RedBack Networks, Inc.
+
+		Postal:	300 Holger Way
+			San Jose, CA  95134-1362
+			USA
+
+		 Phone:	+1 408 750 5000
+		   Fax: +1 408 750 5599
+
+		E-mail:	mib-info@redback.com"
+	DESCRIPTION
+		"This management information module contains the
+		administrative assignments which are used to
+		uniquely identify physical components"
+
+	REVISION	"200405110000Z" -- May 11, 2004
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSEAIMOC12E
+			rbnEntPortSEAIMOC12E
+		"
+	REVISION	"200309250000Z" -- September 25, 2003
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSEE3
+			rbnEntPortSEE3
+		"
+	REVISION	"200307240000Z" -- July 24, 2003
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntSensorAlarmSE400
+		"
+	REVISION	"200305191700Z" -- May 19, 2003
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSMSXFE
+		"
+	REVISION	"200305050000Z" -- May 5,2003
+	DESCRIPTION
+		"Added new OID:
+			rbnEntPortSEXC3MGMT
+		"
+	REVISION	"200303250000Z" -- March 25,2003
+	DESCRIPTION
+		"Added new OIDs:
+			rbnSmartEdge400
+			rbnEntChassisSE400
+			rbnEntBackplaneSE400Data
+			rbnEntContainerSE400Data
+			rbnEntFanSE400
+			rbnEntModuleSEXC3
+		"
+	REVISION	"200206130000Z" -- June 13, 2002
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSECHSTM1E1
+			rbnEntModuleSEE1
+			rbnEntPortSECHSTM1E1
+			rbnEntPortSEE1
+		"
+	REVISION	"200206060000Z" -- June 6, 2002
+	DESCRIPTION
+		"Updated the Contact Phone and Fax numbers.
+		Added new OIDs:
+			rbnEntModuleSEDS3
+			rbnEntPortSEDS3
+			rbnEntModuleSEAIMDS3
+			rbnEntPortSEAIMDS3
+		"
+	REVISION	"200112120000Z" -- December 12, 2001
+	DESCRIPTION
+		"Changed the CONTACT-INFO postal address.
+		Added new OIDs:
+			rbnEntModuleSECHDS3
+			rbnEntPortSECHDS3
+		"
+	REVISION	"200109261700Z" -- September 25, 2001
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSEAIMOC3
+			rbnEntModuleSEAIMOC12
+			rbnEntPortSEAIMOC3
+			rbnEntPortSEAIMOC12
+		"
+	REVISION	"200107251000Z" -- July 25, 2001
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSECHOC12DS1
+			rbnEntModuleSECHOC12DS3
+			rbnEntPortSECHOC12DS1
+			rbnEntPortSECHOC12DS3
+		"
+	REVISION	"200105151507Z" -- May 15, 2001
+	DESCRIPTION
+		"Updated name for new SMS platform.
+		"
+	REVISION	"200105041642Z" -- May 04, 2001
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntChassisSE800
+			rbnEntBackplaneSE800Data
+			rbnEntContainerSE800Data
+			rbnEntFanSE800
+			rbnEntModuleSEXC
+			rbnEntModuleSEEIM
+			rbnEntModuleSEGIGEIM
+			rbnEntModuleSEPOSOC12
+			rbnEntModuleSEPOSOC48
+			rbnEntModuleSEPOSOC3
+			rbnEntPortSEXCMGMT 
+			rbnEntPortSEEIM
+			rbnEntPortSEGIGEIM
+			rbnEntPortSEPOSOC12
+			rbnEntPortSEPOSOC48
+			rbnEntPortSEPOSOC3
+		"
+	REVISION	"200102131857Z" -- February 13, 2001
+	DESCRIPTION
+		"Added new OID:
+			rbnSmartEdge800
+		"
+	REVISION	"200102131007Z" -- February 13, 2001
+	DESCRIPTION
+		"Added support for new SMS platform.
+		"
+	REVISION	"200102011707Z" -- February 1, 2001
+	DESCRIPTION
+		"Added new OID:
+		"
+	REVISION	"200101051834Z" -- January 5, 2001
+	DESCRIPTION
+		"Added new OIDs:
+		"
+	REVISION	"200012281704Z" -- December 28, 2000
+	DESCRIPTION
+		"Added new OIDs:
+		"
+	REVISION	"200011151704Z" -- November 15, 2000
+	DESCRIPTION
+		"Added new OID:
+			rbnEntBackplaneSMS10000Midplane
+		"
+	REVISION	"200011021454Z" -- November 2, 2000
+	DESCRIPTION
+		"Added new OID:
+			rbnEntModuleSMSFE3
+		"
+	REVISION	"200010251523Z" -- October 25, 2000
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSMSPIMCDS3
+			rbnEntPortSMSPIMCDS3
+		"
+	REVISION	"200010201730Z" -- October 20, 2000
+	DESCRIPTION
+		"Added new OIDs:
+			rbnEntModuleSMSFABRIC
+			rbnEntModuleSMSTIMING
+			rbnEntModuleSMSCM
+			rbnEntModuleSMSSM
+		"
+	REVISION	"200009261330Z"	-- September 26, 2000
+	DESCRIPTION
+		"Added new OIDs:
+		"
+	REVISION	"200009251120Z"	-- Sep 25, 2000
+	DESCRIPTION
+		"Added new OID:
+			rbnEntPortSMSAIME1
+		"
+	REVISION	"200007191544Z"	-- Jul 19, 2000
+	DESCRIPTION
+		"Added new OID:
+			rbnEntModuleSMSAIME1
+		"
+	REVISION	"200007062150Z"	-- July 6, 2000
+	DESCRIPTION
+		"Added new OID:
+		"
+	REVISION	"200006161700Z"	-- Jun 16, 2000
+	DESCRIPTION
+		"In MODULE-IDENTITY, updated CONTACT-INFO and added
+		new REVISION info.
+
+		Added new OIDs:
+		    rbnEntModuleSMSAIMOC12
+		    rbnEntPortSMSAIMOC12"
+
+	REVISION	"200006131700Z"	-- Jun 13, 2000
+	DESCRIPTION
+		"In MODULE-IDENTITY, updated CONTACT-INFO and added
+		new REVISION info.
+
+		Added new OIDs:
+			rbnEntModuleSMSAIMT1
+			rbnEntPortSMSAIMT1
+			rbnEntModuleSMSAIME3
+			rbnEntPortSMSAIME3"
+
+	REVISION	"200005180000Z"	-- May 18, 2000
+	DESCRIPTION
+		"Addition of rbnSMS10000"
+
+	REVISION	"9907081712Z"	-- Jul 8, 1999
+	DESCRIPTION
+		"Addition of rbnSMS1800"
+
+	REVISION	"9808051900Z"	-- Aug 5, 1998
+	DESCRIPTION
+		"Initial version"
+	::= { rbnModules 1 }
+
+
+-- 
+-- RedBack Product Assignments
+-- 
+
+rbnSMS1000 OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"The definitive identifier of the RedBack Networks
+		SMS 1000"
+	::= { rbnProducts 1 }
+
+rbnSMS500 OBJECT-IDENTITY
+	STATUS  current
+	DESCRIPTION
+		"The definitive identifier of the RedBack Networks
+		SMS 500"
+	::= { rbnProducts 2 }
+
+rbnSMS1800 OBJECT-IDENTITY
+        STATUS  current
+        DESCRIPTION
+                "The definitive identifier of the RedBack Networks
+                SMS 1800"
+        ::= { rbnProducts 3 }
+
+rbnSMS10000 OBJECT-IDENTITY
+        STATUS  current
+        DESCRIPTION 
+                "The definitive identifier of the RedBack Networks
+                SMS 10000"
+        ::= { rbnProducts 4 }
+
+
+
+
+
+
+
+rbnSmartEdge800 OBJECT-IDENTITY
+        STATUS  current
+        DESCRIPTION 
+                "The definitive identifier of the RedBack Networks
+                SmartEdge 800"
+        ::= { rbnProducts 10 }
+
+rbnSmartEdge400 OBJECT-IDENTITY
+        STATUS  current
+        DESCRIPTION 
+                "The definitive identifier of the RedBack Networks
+                SmartEdge 400"
+        ::= { rbnProducts 11 }
+
+-- 
+-- RedBack Entity Assignments
+--
+-- { rbnEntities 1 } and { rbnEntities 2 } are unassigned
+
+rbnEntityTypeOther OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *other*"
+      ::= { rbnEntities 1 }
+
+rbnEntityTypeUnknown OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *unknown*"
+      ::= { rbnEntities 2 }
+
+rbnEntityTypeChassis OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *chassis*"
+      ::= { rbnEntities 3 }
+
+rbnEntChassisSMS1000 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 chassis entity."
+      ::= { rbnEntityTypeChassis 1 }
+
+rbnEntChassisSMS500 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 chassis entity."
+      ::= { rbnEntityTypeChassis 2 }
+
+rbnEntChassisSMS1800 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 chassis entity."
+      ::= { rbnEntityTypeChassis 3 }
+
+rbnEntChassisSMS10000 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 chassis entity."
+      ::= { rbnEntityTypeChassis 4 }
+
+
+rbnEntChassisSE800 OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 800 chassis entity."
+      ::= { rbnEntityTypeChassis 6 }
+
+rbnEntChassisSE400 OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 400 chassis entity."
+      ::= { rbnEntityTypeChassis 7 }
+
+rbnEntityTypeBackplane OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *backplane*"
+      ::= { rbnEntities 4 }
+
+rbnEntBackplaneSMS1000Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 data backplane entity."
+      ::= { rbnEntityTypeBackplane 1 }
+
+rbnEntBackplaneSMS1000Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 power backplane entity."
+      ::= { rbnEntityTypeBackplane 2 }
+
+rbnEntBackplaneSMS500Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 data backplane entity."
+      ::= { rbnEntityTypeBackplane 3 }
+
+rbnEntBackplaneSMS500Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 power backplane entity."
+      ::= { rbnEntityTypeBackplane 4 }
+
+rbnEntBackplaneSMS1800Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 data backplane entity."
+      ::= { rbnEntityTypeBackplane 5 }
+
+rbnEntBackplaneSMS1800Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 power backplane entity."
+      ::= { rbnEntityTypeBackplane 6 }
+
+rbnEntBackplaneSMS10000Midplane OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 midplane entity."
+      ::= { rbnEntityTypeBackplane 7 }
+
+
+
+rbnEntBackplaneSE800Data OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 800 data backplane entity."
+      ::= { rbnEntityTypeBackplane 10 }
+
+rbnEntBackplaneSE400Data OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 400 data backplane entity."
+      ::= { rbnEntityTypeBackplane 11 }
+
+rbnEntityTypeContainer OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *container*"
+      ::= { rbnEntities 5 }
+
+rbnEntContainerSMS1000Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 data container (slot) entity."
+      ::= { rbnEntityTypeContainer 1 }
+
+rbnEntContainerSMS1000Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 power container (slot) entity."
+      ::= { rbnEntityTypeContainer 2 }
+
+rbnEntContainerSMS500Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 data container (slot) entity."
+      ::= { rbnEntityTypeContainer 3 }
+
+rbnEntContainerSMS500Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 power container (slot) entity."
+      ::= { rbnEntityTypeContainer 4 }
+
+rbnEntContainerSMS1800Data OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 data container (slot) entity."
+      ::= { rbnEntityTypeContainer 5 }
+
+rbnEntContainerSMS1800Power OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 power container (slot) entity."
+      ::= { rbnEntityTypeContainer 6 }
+
+rbnEntContainerSMS10000Fabric OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 fabric container (slot) entity."
+      ::= { rbnEntityTypeContainer 7 }
+
+rbnEntContainerSMS10000Timing OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 timing container (slot) entity."
+      ::= { rbnEntityTypeContainer 8 }
+
+rbnEntContainerSMS10000SMCM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 SM/CM container (slot) entity."
+      ::= { rbnEntityTypeContainer 9 }
+
+rbnEntContainerSMS10000IO OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10000 IO container (slot) entity."
+      ::= { rbnEntityTypeContainer 10 }
+
+
+
+
+rbnEntContainerSE800Data OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 800 data container (slot) entity."
+      ::= { rbnEntityTypeContainer 14 }
+
+rbnEntContainerSE400Data OBJECT-IDENTITY
+      STATUS current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 400 data container (slot) entity."
+      ::= { rbnEntityTypeContainer 15 }
+
+rbnEntityTypePowerSupply OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *powerSupply*"
+      ::= { rbnEntities 6 }
+
+rbnEntPowerSupplyUnknown OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The identifier use to represent any power supply which
+              cannot be definitively identified, probably due to the
+              fact that its configuration EEPROM is not valid"
+      ::= { rbnEntityTypePowerSupply 1 }
+
+rbnEntPowerSupplySMS1000AC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 AC Power Supply, model PS-1K-AC"
+      ::= { rbnEntityTypePowerSupply 2 }
+
+rbnEntPowerSupplySMS1000DC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1000 DC Power Supply, model PS-1K-DC"
+      ::= { rbnEntityTypePowerSupply 3 }
+
+rbnEntPowerSupplySMS500AC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 AC Power Supply"
+      ::= { rbnEntityTypePowerSupply 4 }
+
+rbnEntPowerSupplySMS500DC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 500 DC Power Supply"
+      ::= { rbnEntityTypePowerSupply 5 }
+
+rbnEntPowerSupplySMS1800AC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 AC Power Supply"
+      ::= { rbnEntityTypePowerSupply 6 }
+
+rbnEntPowerSupplySMS1800DC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 1800 DC Power Supply"
+      ::= { rbnEntityTypePowerSupply 7 }
+
+
+
+
+rbnEntityTypeFan OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *fan*"
+      ::= { rbnEntities 7 }
+
+rbnEntFanSE800 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 800 Fan Tray"
+      ::= { rbnEntityTypeFan 1 }
+
+rbnEntFanSE400 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 400 Fan Tray"
+      ::= { rbnEntityTypeFan 2 }
+
+rbnEntityTypeSensor OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *sensor*"
+      ::= { rbnEntities 8 }
+
+rbnEntSensorAlarmSE400 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 400 Alarm Card"
+      ::= { rbnEntityTypeSensor 1 }
+
+rbnEntityTypeModule OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *module*"
+      ::= { rbnEntities 9 }
+
+rbnEntModuleUnknown OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The identifier use to represent any module which
+              cannot be definitively identified, probably due
+              to the fact that its configuration EEPROM is not
+              valid"
+      ::= { rbnEntityTypeModule 1 }
+
+rbnEntModuleSMSCE1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 1"
+      ::= { rbnEntityTypeModule 16 }
+
+rbnEntModuleSMSCE2 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 2"
+      ::= { rbnEntityTypeModule 17 }
+
+rbnEntModuleSMSCE3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 3"
+      ::= { rbnEntityTypeModule 18 }
+
+rbnEntModuleSMSFE1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Forwarding Engine 1"
+      ::= { rbnEntityTypeModule 10 }
+
+rbnEntModuleSMSFE2 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Forwarding Engine 2"
+      ::= { rbnEntityTypeModule 12 }
+
+rbnEntModuleSMSFE3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Forwarding Engine 3"
+      ::= { rbnEntityTypeModule 35 }
+
+rbnEntModuleSMSXFE OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Extended Forwarding Engine"
+      ::= { rbnEntityTypeModule 40 }
+
+rbnEntModuleSMSFABRIC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Switch Fabric module"
+      ::= { rbnEntityTypeModule 29 }
+
+rbnEntModuleSMSTIMING OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Timing module"
+      ::= { rbnEntityTypeModule 31 }
+
+rbnEntModuleSMSCM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS Connection Manager module"
+      ::= { rbnEntityTypeModule 30 }
+
+rbnEntModuleSMSSM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The definitive identifier for the RedBack Networks
+              SMS System Manager module"
+      ::= { rbnEntityTypeModule 32 }
+
+
+rbnEntModuleSMSEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10/100BaseT Ethernet Interface Module"
+      ::= { rbnEntityTypeModule 6 }
+
+rbnEntModuleSMSGIGEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Gigabit Ethernet Interface Module"
+      ::= { rbnEntityTypeModule 26 }
+
+rbnEntModuleSMSAIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM DS3 Interface Module"
+      ::= { rbnEntityTypeModule 4 }
+
+rbnEntModuleSMSPIME3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet E3 Interface Module"
+      ::= { rbnEntityTypeModule 8 }
+
+rbnEntModuleSMSPIME1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet E1 Interface Module"
+      ::= { rbnEntityTypeModule 22 }
+
+rbnEntModuleSMSAIME3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM E3 Interface Module"
+      ::= { rbnEntityTypeModule 5 }
+
+rbnEntModuleSMSAIME1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM E1 Interface Module"
+      ::= { rbnEntityTypeModule 23 }
+
+rbnEntModuleSMSAIMT1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM T1 Interface Module"
+      ::= { rbnEntityTypeModule 20 }
+
+rbnEntModuleSMSAIMOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM OC3 Interface Module"
+      ::= { rbnEntityTypeModule 3 }
+
+rbnEntModuleSMSAIMOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM OC12 Interface Module"
+      ::= { rbnEntityTypeModule 27 } 
+
+rbnEntModuleSMSPOSOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS POS OC3 Interface Module"
+      ::= { rbnEntityTypeModule 24 }
+
+rbnEntModuleSMSPOSOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS POS OC12 Interface Module"
+      ::= { rbnEntityTypeModule 25 }
+
+rbnEntModuleSMSIPSEC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS IPSEC Interface Module"
+      ::= { rbnEntityTypeModule 28 }
+
+rbnEntModuleSMSPIMDS1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet DS1 Interface Module"
+      ::= { rbnEntityTypeModule 14 }
+
+rbnEntModuleSMSPIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet DS3 Interface Module"
+      ::= { rbnEntityTypeModule 7 }
+
+rbnEntModuleSMSPIMCDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Channelized DS3 Interface Module"
+      ::= { rbnEntityTypeModule 15 }
+
+rbnEntModuleSMSPIMHSSI OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet HSSI Interface Module"
+      ::= { rbnEntityTypeModule 9 }
+              
+rbnEntModuleSEXC OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE Cross Connect Module"
+      ::= { rbnEntityTypeModule 41 }
+
+rbnEntModuleSEEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE 10/100BaseT Ethernet Interface Module"
+      ::= { rbnEntityTypeModule 42}
+
+rbnEntModuleSEGIGEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Gigabit Ethernet Interface Module"
+      ::= { rbnEntityTypeModule 43 }
+
+rbnEntModuleSEPOSOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC12 Interface Module"
+      ::= { rbnEntityTypeModule 44 }
+
+rbnEntModuleSEPOSOC48 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC48 Interface Module"
+      ::= { rbnEntityTypeModule 45 }
+
+rbnEntModuleSEPOSOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC3 Interface Module"
+      ::= { rbnEntityTypeModule 46 }
+
+rbnEntModuleSECHOC12DS1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized OC12 DS1 Interface Module"
+      ::= { rbnEntityTypeModule 47 }
+
+rbnEntModuleSECHOC12DS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized OC12 DS3 Interface Module"
+      ::= { rbnEntityTypeModule 48 }
+
+rbnEntModuleSEAIMOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC3 Interface Module"
+      ::= { rbnEntityTypeModule 49 }
+
+rbnEntModuleSEAIMOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC12 Interface Module"
+      ::= { rbnEntityTypeModule 50 } 
+
+rbnEntModuleSECHDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized DS3 Interface Module"
+      ::= { rbnEntityTypeModule 51 }
+
+rbnEntModuleSEDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE DS3 Interface Module"
+      ::= { rbnEntityTypeModule 52 }
+
+rbnEntModuleSEAIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM DS3 Interface Module"
+      ::= { rbnEntityTypeModule 53 }
+
+rbnEntModuleSECHSTM1E1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized STM-1 to E1 Interface Module"
+      ::= { rbnEntityTypeModule 54 }
+
+rbnEntModuleSEE1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE E1 Interface Module"
+      ::= { rbnEntityTypeModule 55 }
+
+rbnEntModuleSEXC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE Cross Connect Module Version 3"
+      ::= { rbnEntityTypeModule 56 }
+
+rbnEntModuleSEE3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE E3 Interface Module"
+      ::= { rbnEntityTypeModule 57 }
+
+rbnEntModuleSEAIMOC12E OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC12 Enhanced Interface Module"
+      ::= { rbnEntityTypeModule 58 }
+
+
+rbnEntityTypePort OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION 
+              "The top-level category identifier for entities which
+              reside in the ENTITY-MIB PhysicalClass *port*" 
+      ::= { rbnEntities 10 }
+
+rbnEntPortUnknown OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The identifier use to represent any module which
+              cannot be definitively identified, probably due
+              to the fact that its configuration EEPROM is not
+              valid"
+      ::= { rbnEntityTypePort 1 }
+
+rbnEntPortSMSCE1MGMT OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 1, Local Management Port"
+      ::= { rbnEntityTypePort 16 }
+
+rbnEntPortSMSCE2MGMT OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 2, Local Management Port"
+      ::= { rbnEntityTypePort 17 }
+
+rbnEntPortSMSCE3MGMT OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Control Engine 3, Local Management Port"
+      ::= { rbnEntityTypePort 18 }
+
+
+rbnEntPortSMSEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS 10/100BaseT Ethernet Interface Port"
+      ::= { rbnEntityTypePort 6 }
+
+rbnEntPortSMSGIGEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Gigabit Ethernet Interface Port"
+      ::= { rbnEntityTypePort 26 }
+
+rbnEntPortSMSAIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM DS3 Interface Port"
+      ::= { rbnEntityTypePort 4 }
+
+rbnEntPortSMSPIME3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet E3 Interface Port"
+      ::= { rbnEntityTypePort 8 }
+
+rbnEntPortSMSPIME1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet E1 Interface Port"
+      ::= { rbnEntityTypePort 22 }
+
+rbnEntPortSMSAIME3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM E3 Interface Port"
+      ::= { rbnEntityTypePort 5 }
+
+rbnEntPortSMSAIME1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM E1 Interface Port"
+      ::= { rbnEntityTypePort 23 }
+
+rbnEntPortSMSAIMT1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM T1 Interface Port"
+      ::= { rbnEntityTypePort 20 }
+
+rbnEntPortSMSAIMOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM OC3 Interface Port"
+      ::= { rbnEntityTypePort 3 }
+
+rbnEntPortSMSAIMOC12 OBJECT-IDENTITY  
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS ATM OC12 Interface Port"  
+      ::= { rbnEntityTypePort 27 }
+
+rbnEntPortSMSPOSOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS POS OC3 Interface Port"
+      ::= { rbnEntityTypePort 24 }
+
+rbnEntPortSMSPOSOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS POS OC12 Interface Port"
+      ::= { rbnEntityTypePort 25 }
+
+rbnEntPortSMSPIMDS1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet DS1 Interface Port"
+      ::= { rbnEntityTypePort 14 }
+
+rbnEntPortSMSPIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet DS3 Interface Port"
+      ::= { rbnEntityTypePort 7 }
+
+rbnEntPortSMSPIMCDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Channelized DS3 Interface Port"
+      ::= { rbnEntityTypePort 15 }
+
+rbnEntPortSMSPIMHSSI OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SMS Packet HSSI Interface Port"
+      ::= { rbnEntityTypePort 9 }
+
+rbnEntPortSEXCMGMT OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE Cross Connect, Local Management Port"
+      ::= { rbnEntityTypePort 41 }
+
+rbnEntPortSEEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE 10/100BaseT Ethernet Interface Port"
+      ::= { rbnEntityTypePort 42 }
+
+rbnEntPortSEGIGEIM OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Gigabit Ethernet Interface Port"
+      ::= { rbnEntityTypePort 43 }
+
+rbnEntPortSEPOSOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC12 Interface Port"
+      ::= { rbnEntityTypePort 44 }
+
+rbnEntPortSEPOSOC48 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC48 Interface Port"
+      ::= { rbnEntityTypePort 45 }
+
+rbnEntPortSEPOSOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE POS OC3 Interface Port"
+      ::= { rbnEntityTypePort 46 }
+
+rbnEntPortSECHOC12DS1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized OC12 DS1 Interface Port"
+      ::= { rbnEntityTypePort 47 }
+
+rbnEntPortSECHOC12DS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized OC12 DS3 Interface Port"
+      ::= { rbnEntityTypePort 48 }
+
+rbnEntPortSEAIMOC3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC3 Interface Port"
+      ::= { rbnEntityTypePort 49 }
+
+rbnEntPortSEAIMOC12 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC12 Interface Port"
+      ::= { rbnEntityTypePort 50 } 
+
+rbnEntPortSECHDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized DS3 Interface Port"
+      ::= { rbnEntityTypePort 51 }
+
+rbnEntPortSEDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE DS3 Interface Port"
+      ::= { rbnEntityTypePort 52 }
+
+rbnEntPortSEAIMDS3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM DS3 Interface Port"
+      ::= { rbnEntityTypePort 53 }
+
+rbnEntPortSECHSTM1E1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE Channelized STM-1 to E1 Interface Port"
+      ::= { rbnEntityTypePort 54 }
+
+rbnEntPortSEE1 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE E1 Interface Port"
+      ::= { rbnEntityTypePort 55 }
+
+rbnEntPortSEXC3MGMT OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the Redback Networks
+              SE Cross Connect 3, Local Management Port"
+      ::= { rbnEntityTypePort 56 }
+
+rbnEntPortSEE3 OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE E3 Interface Port"
+      ::= { rbnEntityTypePort 57 }
+
+rbnEntPortSEAIMOC12E OBJECT-IDENTITY
+      STATUS  current
+      DESCRIPTION
+              "The definitive identifier for the RedBack Networks
+              SE ATM OC12 Enhanced Interface Port"
+      ::= { rbnEntityTypePort 58 }
+
+END
