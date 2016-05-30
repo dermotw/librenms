@@ -64,7 +64,7 @@ else {
     onchange="window.open(this.options[this.selectedIndex].value,'_top')" >
 <?php
 
-    foreach (get_graph_subtypes($type) as $avail_type) {
+    foreach (get_graph_subtypes($type, $device) as $avail_type) {
         echo("<option value='".generate_url($vars, array('type' => $type."_".$avail_type, 'page' => "graphs"))."'");
         if ($avail_type == $subtype) {
             echo(" selected");
@@ -85,7 +85,7 @@ else {
     $thumb_array = array('sixhour' => '6 Hours', 'day' => '24 Hours', 'twoday' => '48 Hours', 'week' => 'One Week', 'twoweek' => 'Two Weeks',
         'month' => 'One Month', 'twomonth' => 'Two Months','year' => 'One Year', 'twoyear' => 'Two Years');
 
-    echo('<table width=100%><tr>');
+     echo('<table width=100% class="thumbnail_graph_table"><tr>');
 
     foreach ($thumb_array as $period => $text) {
         $graph_array['from']   = $config['time'][$period];
@@ -108,8 +108,26 @@ else {
     echo('</tr></table>');
 
     $graph_array = $vars;
-    $graph_array['height'] = "300";
+    $graph_array['height'] = $config['webui']['min_graph_height'];
     $graph_array['width']  = $graph_width;
+
+    if($_SESSION['screen_width']) {
+        if($_SESSION['screen_width'] > 800) {
+            $graph_array['width'] = ($_SESSION['screen_width'] - ($_SESSION['screen_width']/10));
+        }
+        else {
+            $graph_array['width'] = ($_SESSION['screen_width'] - ($_SESSION['screen_width']/4));
+        }
+    }
+
+    if($_SESSION['screen_height']) {
+        if($_SESSION['screen_height'] > 960 ) { 
+            $graph_array['height'] = ($_SESSION['screen_height'] - ($_SESSION['screen_height']/2));
+        }
+        else {
+            $graph_array['height'] = max($graph_array['height'],($_SESSION['screen_height'] - ($_SESSION['screen_height']/1.5)));
+        }
+    }
 
     echo("<hr />");
 

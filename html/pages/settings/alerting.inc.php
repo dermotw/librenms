@@ -244,6 +244,14 @@ $mail_conf = array(
           'descr'              => 'From name',
           'type'               => 'text',
     ),
+    array('name'               => 'email_from',
+          'descr'              => 'From email address',
+          'type'               => 'text',
+    ),
+    array('name'               => 'email_html',
+          'descr'              => 'Use HTML emails',
+          'type'               => 'checkbox',
+    ),
     array('name'               => 'email_sendmail_path',
           'descr'              => 'Sendmail path',
           'type'               => 'text',
@@ -291,7 +299,7 @@ echo '
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#api_transport_expand">API transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="api" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#api_transport_expand"><i class="fa fa-caret-down"></i> API transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="api" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="api_transport_expand" class="panel-collapse collapse">
@@ -303,7 +311,7 @@ echo '
                     </div>';
                     $api_urls = get_config_like_name('alert.transports.api.%.');
 foreach ($api_urls as $api_url) {
-    $api_split  = split('\.', $api_url['config_name']);
+    $api_split  = explode('.', $api_url['config_name']);
     $api_method = $api_split[3];
     echo '<div class="form-group has-feedback" id="'.$api_url['config_id'].'">
                         <label for="api_url" class="col-sm-4 control-label">API URL ('.$api_method.') </label>
@@ -333,7 +341,7 @@ foreach ($api_urls as $api_url) {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#pagerduty_transport_expand">Pagerduty transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="pagerduty" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#pagerduty_transport_expand"><i class="fa fa-caret-down"></i> Pagerduty transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="pagerduty" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="pagerduty_transport_expand" class="panel-collapse collapse">
@@ -358,7 +366,7 @@ else {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#nagios_transport_expand">Nagios compatible transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="nagios" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#nagios_transport_expand"><i class="fa fa-caret-down"></i> Nagios compatible transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="nagios" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="nagios_transport_expand" class="panel-collapse collapse">
@@ -377,7 +385,7 @@ else {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#irc_transport_expand">IRC transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="irc" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#irc_transport_expand"><i class="fa fa-caret-down"></i> IRC transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="irc" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="irc_transport_expand" class="panel-collapse collapse">
@@ -395,7 +403,7 @@ else {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#slack_transport_expand">Slack transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="slack" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#slack_transport_expand"><i class="fa fa-caret-down"></i> Slack transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="slack" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="slack_transport_expand" class="panel-collapse collapse">
@@ -461,7 +469,7 @@ foreach ($slack_urls as $slack_url) {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#hipchat_transport_expand">Hipchat transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="hipchat" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#hipchat_transport_expand"><i class="fa fa-caret-down"></i> Hipchat transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="hipchat" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="hipchat_transport_expand" class="panel-collapse collapse">
@@ -557,7 +565,7 @@ foreach ($hipchat_urls as $hipchat_url) {
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#pushover_transport_expand">Pushover transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="pushover" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#pushover_transport_expand"><i class="fa fa-caret-down"></i> Pushover transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="pushover" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="pushover_transport_expand" class="panel-collapse collapse">
@@ -638,7 +646,7 @@ echo '<div id="pushover_appkey_template" class="hide">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#boxcar_transport_expand">Boxcar transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="boxcar" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#boxcar_transport_expand"><i class="fa fa-caret-down"></i> Boxcar transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="boxcar" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="boxcar_transport_expand" class="panel-collapse collapse">
@@ -704,7 +712,7 @@ echo '<div id="boxcar_appkey_template" class="hide">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#pushbullet_transport_expand">Pushbullet</a> <button name="test-alert" id="test-alert" type="button" data-transport="pushbullet" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#pushbullet_transport_expand"><i class="fa fa-caret-down"></i> Pushbullet</a> <button name="test-alert" id="test-alert" type="button" data-transport="pushbullet" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="pushbullet_transport_expand" class="panel-collapse collapse">
@@ -723,7 +731,7 @@ echo '<div id="boxcar_appkey_template" class="hide">
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#victorops_transport_expand">VictorOps</a> <button name="test-alert" id="test-alert" type="button" data-transport="victorops" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#victorops_transport_expand"><i class="fa fa-caret-down"></i> VictorOps</a> <button name="test-alert" id="test-alert" type="button" data-transport="victorops" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="victorops_transport_expand" class="panel-collapse collapse">
@@ -752,7 +760,7 @@ echo '
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#clickatell_transport_expand">Clickatell transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="clickatell" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#clickatell_transport_expand"><i class="fa fa-caret-down"></i> Clickatell transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="clickatell" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="clickatell_transport_expand" class="panel-collapse collapse">
@@ -788,7 +796,7 @@ echo '
         <div class="panel panel-default">
             <div class="panel-heading">
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#playsms_transport_expand">PlaySMS transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="playsms" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                    <a data-toggle="collapse" data-parent="#accordion" href="#playsms_transport_expand"><i class="fa fa-caret-down"></i> PlaySMS transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="playsms" class="btn btn-primary btn-xs pull-right">Test transport</button>
                 </h4>
             </div>
             <div id="playsms_transport_expand" class="panel-collapse collapse">
@@ -827,6 +835,59 @@ echo '
                             <textarea class="form-control" name="global-config-textarea" id="playsms_to" placeholder="Enter the config options" data-config_id="'.$playsms_url['config_id'].'" data-type="playsms">'.$upd_mobiles.'</textarea>
                             <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>';
+$canopsis_host   = get_config_by_name('alert.transports.canopsis.host');
+$canopsis_port   = get_config_by_name('alert.transports.canopsis.port');
+$canopsis_user   = get_config_by_name('alert.transports.canopsis.user');
+$canopsis_passwd = get_config_by_name('alert.transports.canopsis.passwd');
+$canopsis_vhost  = get_config_by_name('alert.transports.canopsis.vhost');
+echo '
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#canopsis_transport_expand"><i class="fa fa-caret-down"></i> Canopsis transport</a> <button name="test-alert" id="test-alert" type="button" data-transport="canopsis" class="btn btn-primary btn-xs pull-right">Test transport</button>
+                </h4>
+            </div>
+            <div id="canopsis_transport_expand" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div class="form-group has-feedback">
+                        <label for="canopsis_host" class="col-sm-4 control-label">Canopsis Hostname </label>
+                        <div class="col-sm-4">
+                            <input id="canopsis_host" class="form-control" type="text" name="global-config-input" value="'.$canopsis_host['config_value'].'" data-config_id="'.$canopsis_host['config_id'].'">
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label for="canopsis_port" class="col-sm-4 control-label">Canopsis Port number </label>
+                        <div class="col-sm-4">
+                            <input id="canopsis_port" class="form-control" type="text" name="global-config-input" value="'.$canopsis_port['config_value'].'" data-config_id="'.$canopsis_port['config_id'].'">
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label for="canopsis_user" class="col-sm-4 control-label">User</label>
+                        <div class="col-sm-4">
+                            <input id="canopsis_user" class="form-control" type="text" name="global-config-input" value="'.$canopsis_user['config_value'].'" data-config_id="'.$canopsis_user['config_id'].'">
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label for="canopsis_passwd" class="col-sm-4 control-label">Password</label>
+                        <div class="col-sm-4">
+                            <input id="canopsis_passwd" class="form-control" type="password" name="global-config-input" value="'.$canopsis_passwd['config_value'].'" data-config_id="'.$canopsis_passwd['config_id'].'">
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label for="canopsis_vhost" class="col-sm-4 control-label">Vhost</label>
+                        <div class="col-sm-4">
+                            <input id="canopsis_vhost" class="form-control" type="text" name="global-config-input" value="'.$canopsis_vhost['config_value'].'" data-config_id="'.$canopsis_vhost['config_id'].'">
+                            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -850,7 +911,7 @@ echo '
         var transport = $this.data("transport");
         $.ajax({
             type: 'POST',
-            url: '/ajax_form.php',
+            url: 'ajax_form.php',
             data: { type: "test-transport", transport: transport },
             dataType: "json",
             success: function(data){

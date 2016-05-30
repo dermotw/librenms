@@ -16,8 +16,13 @@
  * Code for Gridster.sort_by_row_and_col_asc(serialization) call is from http://gridster.net/demos/grid-from-serialize.html
  */
 
-$no_refresh = true;
-if (dbFetchCell('SELECT dashboard_id FROM dashboards WHERE user_id=?',array($_SESSION['user_id'])) == 0) {
+$no_refresh   = true;
+$default_dash = 0;
+if (($tmp = dbFetchCell('SELECT dashboard FROM users WHERE user_id=?',array($_SESSION['user_id']))) != 0) {
+    $default_dash = $tmp;
+}
+else if (dbFetchCell('SELECT dashboard_id FROM dashboards WHERE user_id=?',array($_SESSION['user_id'])) == 0) {
+    $tmp = dbInsert(array('dashboard_name'=>'Default','user_id'=>$_SESSION['user_id']),'dashboards');
     $vars['dashboard'] = dbInsert(array('dashboard_name'=>'Default','user_id'=>$_SESSION['user_id']),'dashboards');
     if (dbFetchCell('select 1 from users_widgets where user_id = ? && dashboard_id = ?',array($_SESSION['user_id'],0)) == 1) {
         dbUpdate(array('dashboard_id'=>$vars['dashboard']),'users_widgets','user_id = ? && dashboard_id = ?',array($_SESSION['user_id'],0));
@@ -31,7 +36,12 @@ if (!empty($vars['dashboard'])) {
     }
 }
 if (empty($vars['dashboard'])) {
-    $vars['dashboard'] = dbFetchRow('select * from dashboards where user_id = ? order by dashboard_id limit 1',array($_SESSION['user_id']));
+    if ($default_dash != 0) {
+        $vars['dashboard'] = dbFetchRow('select dashboards.*,users.username from dashboards inner join users on dashboards.user_id = users.user_id where dashboards.dashboard_id = ?',array($default_dash));
+    }
+    else {
+        $vars['dashboard'] = dbFetchRow('select * from dashboards where user_id = ? order by dashboard_id limit 1',array($_SESSION['user_id']));
+    }
     if (isset($orig)) {
         $msg_box[] = array('type' => 'error', 'message' => 'Dashboard <code>#'.$orig.'</code> does not exist! Loaded <code>'.$vars['dashboard']['dashboard_name'].'</code> instead.','title' => 'Requested Dashboard Not Found!');
     }
@@ -159,7 +169,7 @@ foreach (array('Private','Shared (Read)','Shared') as $k=>$v) {
             <ul class="dropdown-menu">
 <?php
 foreach (dbFetchRows("SELECT * FROM `widgets` ORDER BY `widget_title`") as $widgets) {
-    echo '              <li><a href="javascript:return false;" name="place_widget" data-widget_id="'.$widgets['widget_id'] .'">'. $widgets['widget_title'] .'</a></li>';
+    echo '              <li><a href="#" onsubmit="return false;" class="place_widget" data-widget_id="'.$widgets['widget_id'] .'">'. $widgets['widget_title'] .'</a></li>';
 }
 ?>
             </ul>
@@ -306,7 +316,7 @@ foreach (dbFetchRows("SELECT * FROM `widgets` ORDER BY `widget_title`") as $widg
             });
         });
 
-        $('a[name="place_widget"]').on('click',  function(event, state) {
+        $('.place_widget').on('click',  function(event, state) {
             var widget_id = $(this).data('widget_id');
             $.ajax({
                 type: 'POST',
@@ -448,11 +458,11 @@ foreach (dbFetchRows("SELECT * FROM `widgets` ORDER BY `widget_title`") as $widg
               '<header class="widget_header"><span id="widget_title_'+data.user_widget_id+'">'+data.title+
               '</span>'+
               '<span class="fade-edit pull-right">'+
-              '<a href="javascript:return false;" class="fa fa-pencil-square-o edit-widget" data-widget-id="'+data.user_widget_id+'" aria-label="Settings" data-toggle="tooltip" data-placement="top" title="Settings">&nbsp;</a>&nbsp;'+
-              '<a href="javascript:return false;" class="text-danger fa fa-times close-widget" data-widget-id="'+data.user_widget_id+'" aria-label="Close" data-toggle="tooltip" data-placement="top" title="Remove">&nbsp;</a>&nbsp;'+
+              '<i class="fa fa-pencil-square-o edit-widget" data-widget-id="'+data.user_widget_id+'" aria-label="Settings" data-toggle="tooltip" data-placement="top" title="Settings">&nbsp;</i>&nbsp;'+
+              '<i class="text-danger fa fa-times close-widget" data-widget-id="'+data.user_widget_id+'" aria-label="Close" data-toggle="tooltip" data-placement="top" title="Remove">&nbsp;</i>&nbsp;'+
               '</span>'+
               '</header>'+
-              '<div class="widget_body" id="widget_body_'+data.user_widget_id+'" style="height: 100%; width:100%;">'+data.widget+'</div>'+
+              '<div class="widget_body" id="widget_body_'+data.user_widget_id+'">'+data.widget+'</div>'+
               '\<script\>var timeout'+data.user_widget_id+' = grab_data('+data.user_widget_id+','+data.refresh+',\''+data.widget+'\');\<\/script\>'+
               '</li>';
         if (data.hasOwnProperty('col') && data.hasOwnProperty('row')) {
@@ -496,6 +506,7 @@ foreach (dbFetchRows("SELECT * FROM `widgets` ORDER BY `widget_title`") as $widg
                 }
             });
         }
+	return false;
     }
 
     function widget_reload(id,data_type) {

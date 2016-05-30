@@ -209,6 +209,8 @@ function generate_device_link($device, $text=null, $vars=array(), $start=0, $end
         $text = $device['hostname'];
     }
 
+    $text = ip_to_sysname($device,$text);
+
     if (isset($config['os'][$device['os']]['over'])) {
         $graphs = $config['os'][$device['os']]['over'];
     }
@@ -461,6 +463,7 @@ function generate_graph_tag($args) {
 }//end generate_graph_tag()
 
 function generate_lazy_graph_tag($args) {
+    global $config;
     $urlargs = array();
     $w = 0;
     $h = 0;
@@ -472,11 +475,23 @@ function generate_lazy_graph_tag($args) {
             case 'height':
                 $h = $arg;
                 break;
+            case 'lazy_w':
+                $lazy_w = $arg;
+                break;
         }
         $urlargs[] = $key."=".urlencode($arg);
     }
 
-    return '<img class="lazy" width="'.$w.'" height="'.$h.'" data-original="graph.php?' . implode('&amp;',$urlargs).'" border="0" />';
+    if(isset($lazy_w)) {
+        $w=$lazy_w;
+    }
+
+    if ($config['enable_lazy_load'] === true) {
+        return '<img class="lazy img-responsive" data-original="graph.php?' . implode('&amp;',$urlargs).'" border="0" />';
+    }
+    else {
+        return '<img class="img-responsive" src="graph.php?' . implode('&amp;',$urlargs).'" border="0" />';
+    }
 
 }//end generate_lazy_graph_tag()
 
@@ -1150,6 +1165,16 @@ function alert_details($details) {
             $fallback      = false;
         }
 
+        if ($tmp_alerts['type'] && $tmp_alerts['label']) {
+            if ($tmp_alerts['error'] == "") {
+                $fault_detail .= ' '.$tmp_alerts['type'].' - '.$tmp_alerts['label'].';&nbsp;';
+            }
+            else {
+                $fault_detail .= ' '.$tmp_alerts['type'].' - '.$tmp_alerts['label'].' - '.$tmp_alerts['error'].';&nbsp;';
+            }
+            $fallback      = false;
+        }
+
         if ($fallback === true) {
             foreach ($tmp_alerts as $k => $v) {
                 if (!empty($v) && $k != 'device_id' && (stristr($k, 'id') || stristr($k, 'desc') || stristr($k, 'msg')) && substr_count($k, '_') <= 1) {
@@ -1189,7 +1214,7 @@ function generate_dynamic_config_panel($title,$end_panel=true,$config_groups,$it
 <div class="panel panel-default">
     <div class="panel-heading">
         <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#'.$anchor.'">'.$title.'</a>
+            <a data-toggle="collapse" data-parent="#accordion" href="#'.$anchor.'"><i class="fa fa-caret-down"></i> '.$title.'</a>
     ';
     if (!empty($transport)) {
         $output .= '<button name="test-alert" id="test-alert" type="button" data-transport="'.$transport.'" class="btn btn-primary btn-xs pull-right">Test transport</button>';
