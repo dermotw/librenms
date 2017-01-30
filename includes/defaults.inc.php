@@ -506,6 +506,14 @@ $config['bad_if'][] = 'span rp';
 $config['bad_if'][] = 'span sp';
 $config['bad_if'][] = 'sslvpn';
 $config['bad_if'][] = 'pppoe-';
+
+#custom
+$config['bad_if'][] = 'gre';
+$config['bad_if'][] = 'ipip';
+$config['bad_if'][] = 'pime';
+$config['bad_if'][] = 'pimd';
+$config['bad_if'][] = 'mtun';
+
 // $config['bad_if'][] = "control plane";  // Example for cisco control plane
 // Ignore ports based on ifType. Case-sensitive.
 $config['bad_iftype'][] = 'voiceEncap';
@@ -525,8 +533,21 @@ $config['bad_iftype'][] = 'aal5';
 $config['bad_iftype'][] = 'shdsl';
 $config['bad_iftype'][] = 'mpls';
 
+#custom
+$config['bad_iftype'][] = 'l3ipvlan';
+$config['bad_iftype'][] = 'other';
+$config['bad_iftype'][] = 'softwareLoopback';
+$config['bad_iftype'][] = 'propVirtual';
+
 $config['bad_if_regexp'][] = '/^ng[0-9]+$/';
 $config['bad_if_regexp'][] = '/^sl[0-9]/';
+
+$config['bad_if_regexp'][] = '/^pd-/';
+$config['bad_if_regexp'][] = '/^pe-/';
+$config['bad_if_regexp'][] = '/^gr-/';
+$config['bad_if_regexp'][] = '/^ip-/';
+$config['bad_if_regexp'][] = '/^ls-/';
+$config['bad_if_regexp'][] = '/^mt-/';
 
 // Rewrite Interfaces
 $config['rewrite_if_regexp']['/^cpu interface/'] = 'Mgmt';
