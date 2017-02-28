@@ -99,10 +99,10 @@ if (isset($state)) {
     </tr>
 <?php
 if ($_SESSION['userlevel'] >= '5') {
-    $host_sql = 'SELECT * FROM devices AS D, services AS S WHERE D.device_id = S.device_id GROUP BY D.hostname ORDER BY D.hostname';
+    $host_sql = 'SELECT `D`.`device_id`,`D`.`hostname` FROM devices AS D, services AS S WHERE D.device_id = S.device_id GROUP BY `D`.`hostname`, `D`.`device_id` ORDER BY D.hostname';
     $host_par = array();
 } else {
-    $host_sql = 'SELECT * FROM devices AS D, services AS S, devices_perms AS P WHERE D.device_id = S.device_id AND D.device_id = P.device_id AND P.user_id = ? GROUP BY D.hostname ORDER BY D.hostname';
+    $host_sql = 'SELECT `D`.`device_id`,`D`.`hostname` FROM devices AS D, services AS S, devices_perms AS P WHERE D.device_id = S.device_id AND D.device_id = P.device_id AND P.user_id = ? GROUP BY `D`.`hostname`, `D`.`device_id` ORDER BY D.hostname';
     $host_par = array($_SESSION['user_id']);
 }
 
@@ -131,11 +131,11 @@ foreach (dbFetchRows($host_sql, $host_par) as $device) {
         <td><?php echo $devlink?></td>
         <td><?php echo $status?></td>
         <td><?php echo formatUptime(time() - $service['service_changed'])?></td>
-        <td><span class='box-desc'><?php echo nl2br(trim($service['service_message']))?></span></td>
-        <td><span class='box-desc'><?php echo nl2br(trim($service['service_desc']))?></span></td>
+        <td><span class='box-desc'><?php echo nl2br(display($service['service_message']))?></span></td>
+        <td><span class='box-desc'><?php echo nl2br(display($service['service_desc']))?></span></td>
         <td>
-            <button type='button' class='btn btn-primary btn-sm' aria-label='Edit' data-toggle='modal' data-target='#create-service' data-service_id='<?php echo $service['service_id']?>' name='edit-service'><span class='glyphicon glyphicon-pencil' aria-hidden='true'></span></button>
-            <button type='button' class='btn btn-danger btn-sm' aria-label='Delete' data-toggle='modal' data-target='#confirm-delete' data-service_id='<?php echo $service['service_id']?>' name='delete-service'><span class='glyphicon glyphicon-trash' aria-hidden='true'></span></button>
+            <button type='button' class='btn btn-primary btn-sm' aria-label='Edit' data-toggle='modal' data-target='#create-service' data-service_id='<?php echo $service['service_id']?>' name='edit-service'><i class='fa fa-pencil' aria-hidden='true'></i></button>
+            <button type='button' class='btn btn-danger btn-sm' aria-label='Delete' data-toggle='modal' data-target='#confirm-delete' data-service_id='<?php echo $service['service_id']?>' name='delete-service'><i class='fa fa-trash' aria-hidden='true'></i></button>
         </td>
     </tr>
 <?php

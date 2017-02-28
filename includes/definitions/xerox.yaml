@@ -1,0 +1,17 @@
+os: xerox
+group: printer
+text: 'Xerox Printer'
+ifname: 1
+type: printer
+over:
+    - { graph: device_toner, text: Toner }
+discovery:
+    - sysDescr:
+        - Xerox Phaser
+        - Xerox WorkCentre
+        - DocuPrint
+discovery_modules:
+    toner: 1
+poller_modules:
+    toner: 1
+

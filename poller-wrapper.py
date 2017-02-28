@@ -11,14 +11,10 @@
                 that should run simultaneously. If no argument is given it will assume
                 a default of 16 threads.
 
- Read more:     http://postman.memetic.org/pipermail/observium/2012-November/001303.html
-
  Ubuntu Linux:  apt-get install python-mysqldb
  FreeBSD:       cd /usr/ports/*/py-MySQLdb && make install clean
 
  Tested on:     Python 2.7.3 / PHP 5.3.10-1ubuntu3.4 / Ubuntu 12.04 LTS
-
- GitHub:        https://github.com/Atrato/observium-poller-wrapper
 
  License:       To the extent possible under law, Job Snijders has waived all
                 copyright and related or neighboring rights to this script.
@@ -81,16 +77,13 @@ except:
 poller_path = config['install_dir'] + '/poller.php'
 db_username = config['db_user']
 db_password = config['db_pass']
+db_port = int(config['db_port'])
 
 if config['db_host'][:5].lower() == 'unix:':
     db_server = config['db_host']
     db_port = 0
-elif ':' in config['db_host']:
-    db_server = config['db_host'].rsplit(':')[0]
-    db_port = int(config['db_host'].rsplit(':')[1])
 else:
     db_server = config['db_host']
-    db_port = 0
 
 db_dbname = config['db_name']
 

@@ -11,7 +11,7 @@
  *  features:  build-348481
  */
 
-$data     = snmp_get_multi($device, 'VMWARE-SYSTEM-MIB::vmwProdName.0 VMWARE-SYSTEM-MIB::vmwProdVersion.0 VMWARE-SYSTEM-MIB::vmwProdBuild.0', '-OQUs', '+VMWARE-ROOT-MIB:VMWARE-SYSTEM-MIB:VMWARE-VMINFO-MIB', '+'.$config['install_dir'].'/mibs/vmware:'.$config['mibdir']);
+$data     = snmp_get_multi($device, 'VMWARE-SYSTEM-MIB::vmwProdName.0 VMWARE-SYSTEM-MIB::vmwProdVersion.0 VMWARE-SYSTEM-MIB::vmwProdBuild.0', '-OQUs', '+VMWARE-ROOT-MIB:VMWARE-SYSTEM-MIB:VMWARE-VMINFO-MIB', 'vmware');
 $version  = preg_replace('/^VMware /', '', $data[0]['vmwProdName']).' '.$data[0]['vmwProdVersion'];
 $features = 'build-'.$data[0]['vmwProdBuild'];
 $hardware = snmp_get($device, 'entPhysicalDescr.1', '-OsvQU', 'ENTITY-MIB');
@@ -28,7 +28,7 @@ echo 'VMware VM: ';
  */
 
 $db_info_list = dbFetchRows('SELECT id, vmwVmVMID, vmwVmDisplayName, vmwVmGuestOS, vmwVmMemSize, vmwVmCpus, vmwVmState FROM vminfo WHERE device_id = ?', array($device['device_id']));
-$current_vminfo = snmpwalk_cache_multi_oid($device, 'vmwVmTable', array(), '+VMWARE-ROOT-MIB:VMWARE-VMINFO-MIB', '+'.$config['mib_dir'].'/vmware:'.$config['mib_dir']);
+$current_vminfo = snmpwalk_cache_multi_oid($device, 'vmwVmTable', array(), '+VMWARE-ROOT-MIB:VMWARE-VMINFO-MIB', 'vmware');
 
 foreach ($db_info_list as $db_info) {
     /*
@@ -79,7 +79,9 @@ foreach ($db_info_list as $db_info) {
         if ($vm_info[$property] != $db_info[$property]) {
             // FIXME - this should loop building a query and then run the query after the loop (bad geert!)
             dbUpdate(array($property => $vm_info[$property]), 'vminfo', '`id` = ?', array($db_info['id']));
-            log_event($db_info['vmwVmDisplayName'].' ('.preg_replace('/^vmwVm/', '', $property).') -> '.$vm_info[$property], $device);
+            if ($db_info['vmwVmDisplayName'] != null) {
+                log_event($db_info['vmwVmDisplayName'] . ' (' . preg_replace('/^vmwVm/', '', $property) . ') -> ' . $vm_info[$property], $device);
+            }
         }
     }
 }//end foreach

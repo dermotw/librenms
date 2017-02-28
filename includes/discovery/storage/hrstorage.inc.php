@@ -15,20 +15,18 @@ if (is_array($hrstorage_array)) {
 
         switch ($fstype) {
             case 'hrStorageVirtualMemory':
-            case 'hrStorageRam';
-            case 'hrStorageOther';
-            case 'nwhrStorageDOSMemory';
-            case 'nwhrStorageMemoryAlloc';
-            case 'nwhrStorageMemoryPermanent';
-            case 'nwhrStorageMemoryAlloc';
-            case 'nwhrStorageCacheBuffers';
-            case 'nwhrStorageCacheMovable';
-            case 'nwhrStorageCacheNonMovable';
-            case 'nwhrStorageCodeAndDataMemory';
-            case 'nwhrStorageDOSMemory';
-            case 'nwhrStorageIOEngineMemory';
-            case 'nwhrStorageMSEngineMemory';
-            case 'nwhrStorageUnclaimedMemory';
+            case 'hrStorageRam':
+            case 'hrStorageOther':
+            case 'nwhrStorageDOSMemory':
+            case 'nwhrStorageMemoryAlloc':
+            case 'nwhrStorageMemoryPermanent':
+            case 'nwhrStorageCacheBuffers':
+            case 'nwhrStorageCacheMovable':
+            case 'nwhrStorageCacheNonMovable':
+            case 'nwhrStorageCodeAndDataMemory':
+            case 'nwhrStorageIOEngineMemory':
+            case 'nwhrStorageMSEngineMemory':
+            case 'nwhrStorageUnclaimedMemory':
                 $deny = 1;
                 break;
         }
@@ -40,25 +38,8 @@ if (is_array($hrstorage_array)) {
             $deny = 1;
         }
 
-        foreach ($config['ignore_mount'] as $bi) {
-            if ($bi == $descr) {
-                $deny = 1;
-                d_echo("$bi == $descr \n");
-            }
-        }
-
-        foreach ($config['ignore_mount_string'] as $bi) {
-            if (strpos($descr, $bi) !== false) {
-                $deny = 1;
-                d_echo("strpos: $descr, $bi \n");
-            }
-        }
-
-        foreach ($config['ignore_mount_regexp'] as $bi) {
-            if (preg_match($bi, $descr) > '0') {
-                $deny = 1;
-                d_echo("preg_match $bi, $descr \n");
-            }
+        if ($deny != 1) {
+            $deny = ignore_storage($descr);
         }
 
         if (isset($config['ignore_mount_removable']) && $config['ignore_mount_removable'] && $fstype == 'hrStorageRemovableDisk') {

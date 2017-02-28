@@ -1,5 +1,6 @@
 <?php
 
+use Phpass\PasswordHash;
 
 function authenticate($username, $password)
 {
@@ -35,6 +36,8 @@ function authenticate($username, $password)
 
 function reauthenticate($sess_id, $token)
 {
+    $sess_id = clean($sess_id);
+    $token = clean($token);
     list($uname,$hash) = explode('|', $token);
     $session           = dbFetchRow("SELECT * FROM `session` WHERE `session_username` = '$uname' AND session_value='$sess_id'", array(), true);
     $hasher            = new PasswordHash(8, false);
@@ -136,15 +139,15 @@ function get_userid($username)
 }//end get_userid()
 
 
-function deluser($username)
+function deluser($userid)
 {
-    dbDelete('bill_perms', '`user_name` =  ?', array($username));
-    dbDelete('devices_perms', '`user_name` =  ?', array($username));
-    dbDelete('ports_perms', '`user_name` =  ?', array($username));
-    dbDelete('users_prefs', '`user_name` =  ?', array($username));
-    dbDelete('users', '`user_name` =  ?', array($username));
+    dbDelete('bill_perms', '`user_id` =  ?', array($userid));
+    dbDelete('devices_perms', '`user_id` =  ?', array($userid));
+    dbDelete('ports_perms', '`user_id` =  ?', array($userid));
+    dbDelete('users_prefs', '`user_id` =  ?', array($userid));
+    dbDelete('users', '`user_id` =  ?', array($userid));
 
-    return dbDelete('users', '`username` =  ?', array($username));
+    return dbDelete('users', '`user_id` =  ?', array($userid));
 }//end deluser()
 
 

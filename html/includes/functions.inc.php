@@ -73,8 +73,11 @@ function nicecase($item)
         case 'nfs-v3-stats':
             return 'NFS v3 Stats';
 
-        case 'ntpd':
-            return 'NTPD (Server)';
+        case 'ntp-client':
+            return 'NTP Client';
+
+        case 'ntp-server':
+            return 'NTP Server';
 
         case 'os-updates':
             return 'OS Updates';
@@ -84,6 +87,18 @@ function nicecase($item)
 
         case 'dhcp-stats':
             return 'DHCP Stats';
+
+        case 'ups-nut':
+            return 'UPS nut';
+
+        case 'ups-apcups':
+            return 'UPS apcups';
+
+        case 'gpsd':
+            return 'GPSD';
+
+        case 'exim-stats':
+            return 'EXIM Stats';
 
         default:
             return ucfirst($item);
@@ -286,13 +301,18 @@ function generate_device_link($device, $text = null, $vars = array(), $start = 0
 }//end generate_device_link()
 
 
-function overlib_link($url, $text, $contents, $class)
+function overlib_link($url, $text, $contents, $class = null)
 {
     global $config;
 
     $contents = "<div style=\'background-color: #FFFFFF;\'>".$contents.'</div>';
     $contents = str_replace('"', "\'", $contents);
-    $output   = '<a class="'.$class.'" href="'.$url.'"';
+    if ($class === null) {
+        $output   = '<a href="'.$url.'"';
+    } else {
+        $output   = '<a class="'.$class.'" href="'.$url.'"';
+    }
+
     if ($config['web_mouseover'] === false) {
         $output .= '>';
     } else {
@@ -574,7 +594,7 @@ function generate_port_link($port, $text = null, $type = null, $overlib = 1, $si
     $graph_array = array();
     $port        = ifNameDescr($port);
     if (!$text) {
-        $text = fixIfName($port['label']);
+        $text = fixifName($port['label']);
     }
 
     if ($type) {
@@ -593,7 +613,7 @@ function generate_port_link($port, $text = null, $type = null, $overlib = 1, $si
 
     $content = '<div class=list-large>'.$port['hostname'].' - '.fixifName($port['label']).'</div>';
     if ($port['ifAlias']) {
-        $content .= escape_quotes($port['ifAlias']).'<br />';
+        $content .= display($port['ifAlias']).'<br />';
     }
 
     $content              .= "<div style=\'width: 850px\'>";
@@ -690,32 +710,38 @@ function print_optionbar_end()
 
 function geteventicon($message)
 {
-    if ($message == 'Device status changed to Down') {
-        $icon = 'server_connect.png';
+    if ($message == 'Device status changed to Down from check') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'red';
     }
 
-    if ($message == 'Device status changed to Up') {
-        $icon = 'server_go.png';
+    if ($message == 'Device status changed to Up from check') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'green';
     }
 
-    if ($message == 'Interface went down' || $message == 'Interface changed state to Down') {
-        $icon = 'if-disconnect.png';
+    if ($message == 'Interface went down' || $message == 'Interface changed state to Down' || $message == 'ifOperStatus: up -> down') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'red';
     }
 
-    if ($message == 'Interface went up' || $message == 'Interface changed state to Up') {
-        $icon = 'if-connect.png';
+    if ($message == 'Interface went up' || $message == 'Interface changed state to Up' || $message == 'ifOperStatus: down -> up') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'green';
     }
 
-    if ($message == 'Interface disabled') {
-        $icon = 'if-disable.png';
+    if ($message == 'Interface disabled' || $message == 'ifAdminStatus: up -> down') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'grey';
     }
 
-    if ($message == 'Interface enabled') {
-        $icon = 'if-enable.png';
+    if ($message == 'Interface enabled' || $message == 'ifAdminStatus: down -> up') {
+        $icon = 'fa-bookmark';
+        $icon_colour = 'green';
     }
 
     if (isset($icon)) {
-        return $icon;
+        return array('icon' => $icon,'colour' => $icon_colour);
     } else {
         return false;
     }
@@ -776,9 +802,9 @@ function getlocations()
 
     // Fetch regular locations
     if ($_SESSION['userlevel'] >= '5') {
-        $rows = dbFetchRows('SELECT D.device_id,location FROM devices AS D GROUP BY location ORDER BY location');
+        $rows = dbFetchRows('SELECT location FROM devices AS D GROUP BY location ORDER BY location');
     } else {
-        $rows = dbFetchRows('SELECT D.device_id,location FROM devices AS D, devices_perms AS P WHERE D.device_id = P.device_id AND P.user_id = ? GROUP BY location ORDER BY location', array($_SESSION['user_id']));
+        $rows = dbFetchRows('SELECT location FROM devices AS D, devices_perms AS P WHERE D.device_id = P.device_id AND P.user_id = ? GROUP BY location ORDER BY location', array($_SESSION['user_id']));
     }
 
     foreach ($rows as $row) {
@@ -844,7 +870,7 @@ function generate_ap_link($args, $text = null, $type = null)
 
     $content = '<div class=list-large>'.$args['text'].' - '.fixifName($args['label']).'</div>';
     if ($args['ifAlias']) {
-        $content .= $args['ifAlias'].'<br />';
+        $content .= display($args['ifAlias']).'<br />';
     }
 
     $content              .= "<div style=\'width: 850px\'>";
@@ -1043,19 +1069,6 @@ function clean_bootgrid($string)
 }//end clean_bootgrid()
 
 
-// Insert new config items
-function add_config_item($new_conf_name, $new_conf_value, $new_conf_type, $new_conf_desc)
-{
-    if (dbInsert(array('config_name' => $new_conf_name, 'config_value' => $new_conf_value, 'config_default' => $new_conf_value, 'config_type' => $new_conf_type, 'config_desc' => $new_conf_desc, 'config_group' => '500_Custom Settings', 'config_sub_group' => '01_Custom settings', 'config_hidden' => '0', 'config_disabled' => '0'), 'config')) {
-        $db_inserted = 1;
-    } else {
-        $db_inserted = 0;
-    }
-
-    return ($db_inserted);
-}//end add_config_item()
-
-
 function get_config_by_group($group)
 {
     $group = array($group);
@@ -1203,7 +1216,7 @@ function generate_dynamic_config_panel($title, $config_groups, $items = array(),
             $output .= '
             <div class="form-group has-feedback">
                 <label for="'.$item['name'].'"" class="col-sm-4 control-label">'.$item['descr'].' </label>
-                <div data-toggle="tooltip" title="'.$config_groups[$item['name']]['config_descr'].'" class="toolTip glyphicon glyphicon-question-sign"></div>
+                <div data-toggle="tooltip" title="'.$config_groups[$item['name']]['config_descr'].'" class="toolTip fa fa-fw fa-lg fa-question-circle"></div>
                 <div class="col-sm-4">
             ';
             if ($item['type'] == 'checkbox') {
@@ -1211,6 +1224,16 @@ function generate_dynamic_config_panel($title, $config_groups, $items = array(),
             } elseif ($item['type'] == 'text') {
                 $output .= '
                 <input id="'.$item['name'].'" class="form-control" type="text" name="global-config-input" value="'.$config_groups[$item['name']]['config_value'].'" data-config_id="'.$config_groups[$item['name']]['config_id'].'">
+                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
+                ';
+            } elseif ($item['type'] == 'password') {
+                $output .= '
+                <input id="'.$item['name'].'" class="form-control" type="password" name="global-config-input" value="'.$config_groups[$item['name']]['config_value'].'" data-config_id="'.$config_groups[$item['name']]['config_id'].'">
+                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
+                ';
+            } elseif ($item['type'] == 'numeric') {
+                $output .= '
+                <input id="'.$item['name'].'" class="form-control" onkeypress="return (event.charCode == 8 || event.charCode == 0) ? null : event.charCode >= 48 && event.charCode <= 57" type="text" name="global-config-input" value="'.$config_groups[$item['name']]['config_value'].'" data-config_id="'.$config_groups[$item['name']]['config_id'].'">
                 <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
                 ';
             } elseif ($item['type'] == 'select') {
@@ -1219,16 +1242,24 @@ function generate_dynamic_config_panel($title, $config_groups, $items = array(),
                 ';
                 if (!empty($item['options'])) {
                     foreach ($item['options'] as $option) {
-                        $output .= '<option value="'.$option.'"';
-                        if ($option == $config_groups[$item['name']]['config_value']) {
+                        if (gettype($option) == 'string') {
+                            /* for backwards-compatibility */
+                            $tmp_opt = $option;
+                            $option = array(
+                                'value' => $tmp_opt,
+                                'description' => $tmp_opt,
+                            );
+                        }
+                        $output .= '<option value="'.$option['value'].'"';
+                        if ($option['value'] == $config_groups[$item['name']]['config_value']) {
                             $output .= ' selected';
                         }
-                        $output .= '>'.$option.'</option>';
+                        $output .= '>'.$option['description'].'</option>';
                     }
                 }
                 $output .='
                 </select>
-                <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
+                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
                 ';
             }
             $output .= '
@@ -1320,4 +1351,48 @@ function ipmiSensorName($hardwareId, $sensorIpmi, $rewriteArray)
     } else {
         return $sensorIpmi;
     }
+}
+
+/**
+ * @param $filename
+ * @param $content
+ */
+function file_download($filename, $content)
+{
+    $length = strlen($content);
+    header('Content-Description: File Transfer');
+    header('Content-Type: text/plain');
+    header("Content-Disposition: attachment; filename=$filename");
+    header('Content-Transfer-Encoding: binary');
+    header('Content-Length: ' . $length);
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Expires: 0');
+    header('Pragma: public');
+    echo $content;
+}
+
+function get_rules_from_json()
+{
+    global $config;
+    return json_decode(file_get_contents($config['install_dir'] . '/misc/alert_rules.json'), true);
+}
+
+function search_oxidized_config($search_in_conf_textbox)
+{
+    global $config;
+    $oxidized_search_url = $config['oxidized']['url'] . '/nodes/conf_search?format=json';
+    $postdata = http_build_query(
+        array(
+            'search_in_conf_textbox' => $search_in_conf_textbox,
+        )
+    );
+    $opts = array('http' =>
+        array(
+            'method'  => 'POST',
+            'header'  => 'Content-type: application/x-www-form-urlencoded',
+            'content' => $postdata
+        )
+    );
+    $context  = stream_context_create($opts);
+    return json_decode(file_get_contents($oxidized_search_url, false, $context), true);
 }

@@ -60,7 +60,8 @@ if ($_POST['hostname']) {
         $port_assoc_mode = $_POST['port_assoc_mode'];
         try {
             $device_id = addHost($hostname, $snmpver, $port, $transport, $poller_group, $force_add, $port_assoc_mode);
-            print_message("Device added ($device_id)");
+            $link = generate_device_url(array('device_id' => $device_id));
+            print_message("Device added <a href='$link'>$hostname ($device_id)</a>");
         } catch (HostUnreachableException $e) {
             print_error($e->getMessage());
             foreach ($e->getReasons() as $reason) {
@@ -226,19 +227,18 @@ if ($config['distributed_poller'] === true) {
               </select>
           </div>
       </div>
+    ';
+}//endif
+?>
       <div class="form-group">
           <div class="col-sm-offset-3 col-sm-9">
               <div class="checkbox">
                   <label>
-                      <input type="checkbox" name="force_add" id="force_add"> Force add
+                      <input type="checkbox" name="force_add" id="force_add"> Force add - No ICMP or SNMP checks performed
                   </label>
               </div>
           </div>
       </div>
-    ';
-}//end if
-
-?>
     <hr>
     <center><button type="submit" class="btn btn-default" name="Submit">Add Device</button></center>
   </div>

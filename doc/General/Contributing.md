@@ -1,3 +1,4 @@
+source: General/Contributing.md
 All contributors to LibreNMS retain copyright to their own code and are not
 required to sign over their rights to any other party.
 
@@ -33,9 +34,9 @@ To agree with these assertions, please submit a GitHub pull request against
 [AUTHORS.md][5], adding or altering a **single line** *containing your name,
 email address, and GitHub user id* in the file (so that it can be matched to
 your commits), and stating in the *commit log* (not the pull request text):
+
 ```
-	I agree to the conditions of the Contributor Agreement
-	contained in doc/General/Contributing.md.
+I agree to the conditions of the Contributor Agreement contained in doc/General/Contributing.md.
 ```
 
 Local patches
@@ -60,8 +61,6 @@ the package information to the header.
 ```
 <?php
 /*
- * Copyright (c) 2015 Internet Widgitz Pty Ltd <http://example.com/>
- *
  * This program is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
@@ -120,10 +119,18 @@ be sure to note this as a comment in the code (preferably) or the commit
 message.  Accurate attribution is crucial to our success as a Free Software
 project.
 
-- To incorporate larger blocks of code from third parties (e.g. JavaScript
-  libraries):
-    - Include its name, source URL, copyright notice, and license in
-      doc/General/Credits.md
+- For any dependency
+    - Include its name, source URL, copyright notice, and license in doc/General/Credits.md
+
+- To add a php dependency, please use composer
+    - Add the dependency `composer require --update-no-dev -o slim/slim`
+    - Add the files and commit `composer commit` or `git add -f vendor/ composer.json; git commit`
+
+    - Updating php dependencies
+        - Update dependencies `composer update --no-dev -o`
+        - Add the files and commit `composer commit` or `git add -f vendor/; git commit`
+
+- To add a javascript or other dependency
     - Where possible please include libraries in the lib/ folder.
     - Add it in a separate commit into its own directory, using
       git subtree if it is available via git:
@@ -132,9 +139,7 @@ project.
       ```ssh
       git subtree add --squash --prefix=lib/jquery-bootgrid https://github.com/rstaib/jquery-bootgrid.git master
       ```
-    - Add the code to integrate it in a separate commit.  Include:
-        - code to update it in Makefile
-	- Scrutinizer exclusions to .scrutinizer.yml (not needed if added to lib/ folder).
+    - Add the code to integrate it in a separate commit.
 	- symlinks where necessary to maintain sensible paths
 
 - Don't submit code whose license conflicts with the GPLv3.  If you're not
@@ -156,7 +161,7 @@ project.
 
   Please note that the above is necessary even if you don't care about
   keeping the copyright to your code, because otherwise we could be accused
-  of misappropriating Obserivum's code.  As the code bases develop, we
+  of misappropriating Observium's code.  As the code bases develop, we
   expect them to diverge, which means this will become less of an issue
   anyway.
 

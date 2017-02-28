@@ -143,7 +143,7 @@ if ($_SESSION['userlevel'] >= '5') {
                 echo "<tr bgcolor='$dev_colour'><td width=150>".generate_device_link($device, shorthost($device['hostname']));
 
                 if ($device['vrf_name'] != $vrf['vrf_name']) {
-                    echo "<a href='#' onmouseover=\" return overlib('Expected Name : ".$vrf['vrf_name'].'<br />Configured : '.$device['vrf_name']."', CAPTION, '<span class=list-large>VRF Inconsistency</span>' ,FGCOLOR,'#e5e5e5', BGCOLOR, '#c0c0c0', BORDER, 5, CELLPAD, 4, CAPCOLOR, '#050505');\" onmouseout=\"return nd();\"> <img align=absmiddle src=images/16/exclamation.png></a>";
+                    echo "<a href='#' onmouseover=\" return overlib('Expected Name : ".$vrf['vrf_name'].'<br />Configured : '.$device['vrf_name']."', CAPTION, '<span class=list-large>VRF Inconsistency</span>' ,FGCOLOR,'#e5e5e5', BGCOLOR, '#c0c0c0', BORDER, 5, CELLPAD, 4, CAPCOLOR, '#050505');\" onmouseout=\"return nd();\"> <i class='fa fa-flag fa-lg' style='color:red' aria-hidden='true'></i></a>";
                 }
 
                 echo '</td><td>';
@@ -167,7 +167,7 @@ if ($_SESSION['userlevel'] >= '5') {
                             text-align: center; float: left; background-color: ".$list_colour_b_b.";'>
                                 <div style='font-weight: bold;'>".makeshortif($port['ifDescr']).'</div>';
                             print_port_thumbnail($port);
-                            echo "<div style='font-size: 9px;'>".truncate(short_port_descr($port['ifAlias']), 22, '').'</div>
+                            echo "<div style='font-size: 9px;'>".substr(short_port_descr(display($port['ifAlias'])), 0, 22).'</div>
                                 </div>';
                             break;
 

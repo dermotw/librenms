@@ -1,3 +1,4 @@
+source: Extensions/Oxidized.md
 # Oxidized integration
 
 You can integrate LibreNMS with [Oxidized](https://github.com/ytti/oxidized-web) in two ways:
@@ -42,8 +43,6 @@ You will need to configure default credentials for your devices in the Oxidized 
         debug: false
         http:
           url: https://librenms/api/v0/oxidized
-          scheme: https
-          delimiter: !ruby/regexp /:/
           map:
             name: hostname
             model: os
@@ -56,13 +55,13 @@ LibreNMS is able to reload the Oxidized list of nodes, each time a device is add
 To do so, edit the option in Global Settings>External Settings>Oxidized Integration or add the following to your config.php.
 
 ```php
-$config['oxidized']['reload_nodes'] = TRUE;
+$config['oxidized']['reload_nodes'] = true;
 
 ```
 
 #### Using Groups
 
-To return a group to Oxidized you can do this by matching a regex for either hostname, os or location. The order is hostname is matched first, if nothing is found then os is tried and then location is attempted.
+To return a group to Oxidized you can do this by matching a regex for either `hostname`, `os` or `location`. The order is `hostname` is matched first, if nothing is found then `os` is tried and then `location` is attempted.
 The first match found will be used. To match on the device hostnames that contain 'lon-sw' or if the location contains 'London' then you would place the following within config.php:
 
 ```php
@@ -74,6 +73,12 @@ To match on a device os of edgeos then please use the following:
 
 ```php
 $config['oxidized']['group']['os'][] = array('match' => 'edgeos', 'group' => 'wireless');
+```
+
+Verify the return of groups by querying the API:
+
+```
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/oxidized				
 ```
 
 If you need to, you can specify credentials for groups by using the following in your Oxidized config:
@@ -94,4 +99,10 @@ It's also possible to exclude certain device types and OS' from being output via
 ```php
 $config['oxidized']['ignore_types'] = array('server');
 $config['oxidized']['ignore_os'] = array('linux');
+```
+
+If you're runnng SELinux, you'll need to allow httpd to connect outbound to the network, otherwise Oxidized integration in the web UI will silently fail:
+
+```
+setsebool -P httpd_can_network_connect 1
 ```

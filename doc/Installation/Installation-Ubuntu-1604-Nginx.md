@@ -1,3 +1,4 @@
+source: Installation/Installation-Ubuntu-1604-Nginx.md
 > NOTE: These instructions assume you are the root user.  If you are not, prepend `sudo` to the shell commands (the ones that aren't at `mysql>` prompts) or temporarily become a user with root privileges with `sudo -s` or `sudo -i`.
 
 ### DB Server ###
@@ -7,7 +8,7 @@
 #### Install / Configure MySQL
 ```bash
 apt-get install mariadb-server mariadb-client
-service mysql restart
+systemctl restart mysql
 mysql -uroot -p
 ```
 
@@ -30,7 +31,7 @@ innodb_file_per_table=1
 sql-mode=""
 ```
 
-```service mysql restart```
+```systemctl restart mysql```
 
 ### Web Server ###
 
@@ -38,10 +39,10 @@ sql-mode=""
 
 `apt-get install php7.0-cli php7.0-mysql php7.0-gd php7.0-snmp php-pear php7.0-curl php7.0-fpm snmp graphviz php7.0-mcrypt php7.0-json nginx-full fping imagemagick whois mtr-tiny nmap python-mysqldb snmpd php-net-ipv4 php-net-ipv6 rrdtool git`
 
-In `/etc/php/7.0/fpm/php.ini` and `/etc/php/7.0/cli/php.ini`, ensure date.timezone is set to your preferred time zone.  See http://php.net/manual/en/timezones.php for a list of supported timezones.  Valid examples are: "America/New York", "Australia/Brisbane", "Etc/UTC".
+In `/etc/php/7.0/fpm/php.ini` and `/etc/php/7.0/cli/php.ini`, ensure date.timezone is set to your preferred time zone.  See http://php.net/manual/en/timezones.php for a list of supported timezones.  Valid examples are: "America/New_York", "Australia/Brisbane", "Etc/UTC".
 
 ```bash
-service php7.0-fpm restart
+systemctl restart php7.0-fpm
 phpenmod mcrypt
 ```
 
@@ -97,7 +98,8 @@ server {
 ```
 
 ```bash
-service nginx restart
+rm /etc/nginx/sites-enabled/default
+systemctl restart nginx
 ```
 
 #### Web installer
@@ -107,8 +109,8 @@ Now head to: http://librenms.example.com/install.php and follow the on-screen in
 #### Configure snmpd
 
 ```bash
-cp /opt/librenms/snmpd.conf.example /etc/snmpd.conf
-vim /etc/snmpd.conf
+cp /opt/librenms/snmpd.conf.example /etc/snmp/snmpd.conf
+vim /etc/snmp/snmpd.conf
 ```
 
 Edit the text which says `RANDOMSTRINGGOESHERE` and set your own community string.
@@ -116,12 +118,18 @@ Edit the text which says `RANDOMSTRINGGOESHERE` and set your own community strin
 ```bash
 curl -o /usr/bin/distro https://raw.githubusercontent.com/librenms/librenms-agent/master/snmp/distro
 chmod +x /usr/bin/distro
-service snmpd restart
+systemctl restart snmpd
 ```
 
 #### Cron job
 
 `cp librenms.nonroot.cron /etc/cron.d/librenms`
+
+#### Copy logrotate config
+
+LibreNMS keeps logs in `/opt/librenms/logs`. Over time these can become large and be rotated out.  To rotate out the old logs you can use the provided logrotate config file:
+
+    cp misc/librenms.logrotate /etc/logrotate.d/librenms
 
 #### Final steps
 
@@ -129,7 +137,7 @@ service snmpd restart
 chown -R librenms:librenms /opt/librenms
 ```
 
-Now run validate your install and make sure everything is ok:
+Run validate.php as root in the librenms directory:
 
 ```bash
 cd /opt/librenms

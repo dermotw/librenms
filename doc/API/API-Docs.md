@@ -1,3 +1,4 @@
+source: API/API-Docs.md
 - API
 <a name="top"></a>
 - [`Structure`](#api-structure)
@@ -11,6 +12,8 @@
         - [`del_device`](#api-route-2)
         - [`get_device`](#api-route-3)
         - [`get_graphs`](#api-route-5)
+        - [`list_available_health_graphs`](#api-route-list_available_health_graphs)
+        - [`get_health_graph`](#api-route-get_health_graph)
         - [`get_graph_generic_by_hostname`](#api-route-6)
         - [`get_port_graphs`](#api-route-7)
         - [`get_port_stack`](#api-route-29)
@@ -28,6 +31,8 @@
     - [`devicegroups`](#api-devicegroups)
         - [`get_devicegroups`](#api-route-get_devicegroups)
         - [`get_devices_by_group`](#api-route-get_devices_by_group)
+    - [`portgroups`](#api-portgroups)
+        - [`get_graph_by_portgroup`](#api-route-get_graph_by_portgroup)
     - [`routing`](#api-routing)
         - [`list_bgp`](#api-route-1)
         - [`list_ipsec`](#list_ipsec)
@@ -51,6 +56,10 @@
         - [`get_bill`](#api-route-23)
     - [`resources`](#api-resources)
         - [`list_arp`](#api-resources-list_arp)
+    - [`services`](#api-services)
+        - [`list_services`](#api-services-list_services)
+        - [`get_service_for_host`](#api-services-get_service_for_host)
+
 Describes the API structure.
 
 # <a name="api-structure">`Structure`</a> [`top`](#top)
@@ -91,9 +100,9 @@ Output
 
 Input to the API is done in three different ways, sometimes a combination two or three of these.
 
-- Passing parameters via the api route. For example when obtaining a devices details you will pass the hostname of the device in the route: `/api/v0/devices/:hostname`.
-- Passing parameters via the query string. For example you can list all devices on your install but limit the output to devices that are currently down: `/api/v0/devices?type=down`
-- Passing data in via JSON, this will mainly be used when adding or updating information via the API, for instance adding a new device:
+  - Passing parameters via the api route. For example when obtaining a devices details you will pass the hostname of the device in the route: `/api/v0/devices/:hostname`.
+  - Passing parameters via the query string. For example you can list all devices on your install but limit the output to devices that are currently down: `/api/v0/devices?type=down`
+  - Passing data in via JSON, this will mainly be used when adding or updating information via the API, for instance adding a new device:
 ```curl
 curl -X POST -d '{"hostname":"localhost.localdomain","version":"v1","community":"public"}'-H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices
 ```
@@ -102,8 +111,8 @@ curl -X POST -d '{"hostname":"localhost.localdomain","version":"v1","community":
 
 Output from the API currently is via two output types.
 
-- JSON Most API responses will output json. As show in the example for calling the API endpoint.
-- PNG This is for when the request is for an image such as a graph for a switch port.
+  - JSON Most API responses will output json. As show in the example for calling the API endpoint.
+  - PNG This is for when the request is for an image such as a graph for a switch port.
 
 # <a name="api-endpoints">`Endpoints`</a> [`top`](#top)
 
@@ -115,11 +124,11 @@ Delete a given device.
 
 Route: /api/v0/devices/:hostname
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -149,11 +158,11 @@ Get details of a given device.
 
 Route: /api/v0/devices/:hostname
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -182,11 +191,11 @@ Get a list of available graphs for a device, this does not include ports.
 
 Route: /api/v0/devices/:hostname/graphs
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -216,21 +225,161 @@ Output:
 }
 ```
 
+### <a name="api-route-list_available_health_graphs">Function: `list_available_health_graphs`</a> [`top`](#top)
+This function allows to do three things:
+
+  - Get a list of overall health graphs available.
+  - Get a list of health graphs based on provided class.
+  - Get the health sensors information based on ID.
+  
+Route: /api/v0/devices/:hostname/health(/:type)(/:sensor_id)
+
+  - hostname can be either the device hostname or id
+  - type (optional) is health type / sensor class
+  - sensor_id (optional) is the sensor id to retreive specific information.
+  
+Input:
+
+  -
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost/health
+```
+
+Output:
+```
+{
+    "status": "ok",
+    "err-msg": "",
+    "count": 2,
+    "graphs": [
+        {
+            "desc": "Airflow",
+            "name": "device_airflow"
+        },
+        {
+            "desc": "Voltage",
+            "name": "device_voltage"
+        }
+    ]
+}
+```
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost/health/device_voltage
+```
+
+Output:
+```
+{
+    "status": "ok",
+    "err-msg": "",
+    "count": 2,
+    "graphs": [
+        {
+            "sensor_id": "1",
+            "desc": "Input Feed A"
+        },
+        {
+            "sensor_id": "2",
+            "desc": "Output Feed"
+        }
+    ]
+}
+```
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost/health/device_voltage/1
+```
+
+Output:
+```
+{
+    "status": "ok",
+    "err-msg": "",
+    "count": 1,
+    "graphs": [
+        {
+            "sensor_id": "1",
+            "sensor_deleted": "0",
+            "sensor_class": "voltage",
+            "device_id": "1",
+            "poller_type": "snmp",
+            "sensor_oid": ".1.3.6.1.4.1.318.1.1.27.1.1.0",
+            "sensor_index": "1",
+            "sensor_type": "apc",
+            "sensor_descr": "Input",
+            "sensor_divisor": "1",
+            "sensor_multiplier": "1",
+            "sensor_current": "1",
+            "sensor_limit": "1.15",
+            "sensor_limit_warn": null,
+            "sensor_limit_low": "0.85",
+            "sensor_limit_low_warn": null,
+            "sensor_alert": "1",
+            "sensor_custom": "No",
+            "entPhysicalIndex": null,
+            "entPhysicalIndex_measured": null,
+            "lastupdate": "2017-01-13 13:50:26",
+            "sensor_prev": "1"
+        }
+    ]
+}
+```
+
+### <a name="api-route-get_health_graph">Function: `get_health_graph`</a> [`top`](#top)
+
+Get a particular health class graph for a device, if you provide a sensor_id as well then a single sensor graph 
+will be provided. If no sensor_id value is provided then you will be sent a stacked sensor graph.
+
+Route: /api/v0/devices/:hostname/graphs/health/:type(/:sensor_id)
+
+  - hostname can be either the device hostname or id
+  - type is the name of the health graph as returned by [`list_available_health_graphs`](#api-route-list_available_health_graphs)
+  - sensor_id (optional) restricts the graph to return a particular health sensor graph.
+
+Input:
+
+  -
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost/graphs/health/device_voltage
+```
+
+Output:
+
+Output is a stacked graph for the health type provided.
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost/graphs/health/device_voltage/1
+```
+
+Output:
+
+Output is the graph of the particular health type sensor provided.
+
+
+ 
 ### <a name="api-route-6">Function: `get_graph_generic_by_hostname`</a> [`top`](#top)
 
 Get a specific graph for a device, this does not include ports.
 
 Route: /api/v0/devices/:hostname/:type
 
-- hostname can be either the device hostname or id
-- type is the type of graph you want, use [`get_graphs`](#api-route-5) to see the graphs available. Defaults to device_uptime.
+  - hostname can be either the device hostname or id
+  - type is the type of graph you want, use [`get_graphs`](#api-route-5) to see the graphs available. Defaults to device_uptime.
 
 Input:
 
- - from: This is the date you would like the graph to start - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
- - to: This is the date you would like the graph to end - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
- - width: The graph width, defaults to 1075.
- - height: The graph height, defaults to 300.
+  - from: This is the date you would like the graph to start - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - to: This is the date you would like the graph to end - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - width: The graph width, defaults to 1075.
+  - height: The graph height, defaults to 300.
 
 Example:
 ```curl
@@ -247,11 +396,11 @@ Get a list of ports for a particular device.
 
 Route: /api/v0/devices/:hostname/ports
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- - columns: Comma separated list of columns you want returned.
+  - columns: Comma separated list of columns you want returned.
 
 Example:
 ```curl
@@ -285,11 +434,11 @@ Get a list of port mappings for a device.  This is useful for showing physical p
 
 Route: /api/v0/devices/:hostname/port_stack
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- - valid_mappings: Filter the result by only showing valid mappings ("0" values not shown).
+  - valid_mappings: Filter the result by only showing valid mappings ("0" values not shown).
 
 Example:
 ```curl
@@ -326,16 +475,16 @@ Get a list of components for a particular device.
 
 Route: /api/v0/devices/:hostname/components
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- - type: Filter the result by type (Equals).
- - id: Filter the result by id (Equals).
- - label: Filter the result by label (Contains).
- - status: Filter the result by status (Equals).
- - disabled: Filter the result by disabled (Equals).
- - ignore: Filter the result by ignore (Equals).
+  - type: Filter the result by type (Equals).
+  - id: Filter the result by id (Equals).
+  - label: Filter the result by label (Contains).
+  - status: Filter the result by status (Equals).
+  - disabled: Filter the result by disabled (Equals).
+  - ignore: Filter the result by ignore (Equals).
 
 Example:
 ```curl
@@ -390,8 +539,8 @@ Create a new component of a type on a particular device.
 
 Route: /api/v0/devices/:hostname/components/:type
 
-- hostname can be either the device hostname or id
-- type is the type of component to add
+  - hostname can be either the device hostname or id
+  - type is the type of component to add
 
 Example:
 ```curl
@@ -424,7 +573,7 @@ Edit an existing component on a particular device.
 
 Route: /api/v0/devices/:hostname/components
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 In this example we set the label and add a new field: TestField:
 ```curl
@@ -449,8 +598,8 @@ Delete an existing component on a particular device.
 
 Route: /api/v0/devices/:hostname/components/:component
 
-- hostname can be either the device hostname or id
-- component is the component ID to be deleted.
+  - hostname can be either the device hostname or id
+  - component is the component ID to be deleted.
 
 Example:
 ```curl
@@ -472,12 +621,12 @@ Get information about a particular port for a device.
 
 Route: /api/v0/devices/:hostname/ports/:ifname
 
-- hostname can be either the device hostname or id
-- ifname can be any of the interface names for the device which can be obtained using [`get_port_graphs`](#api-route-7). Please ensure that the ifname is urlencoded if it needs to be (i.e Gi0/1/0 would need to be urlencoded.
+  - hostname can be either the device hostname or id
+  - ifname can be any of the interface names for the device which can be obtained using [`get_port_graphs`](#api-route-7). Please ensure that the ifname is urlencoded if it needs to be (i.e Gi0/1/0 would need to be urlencoded.
 
 Input:
 
- - columns: Comma separated list of columns you want returned.
+  - columns: Comma separated list of columns you want returned.
 
 Example:
 ```curl
@@ -505,17 +654,17 @@ Get a graph of a port for a particular device.
 
 Route: /api/v0/devices/:hostname/ports/:ifname/:type
 
-- hostname can be either the device hostname or id
-- ifname can be any of the interface names for the device which can be obtained using [`get_port_graphs`](#api-route-7). Please ensure that the ifname is urlencoded if it needs to be (i.e Gi0/1/0 would need to be urlencoded.
-- type is the port type you want the graph for, you can request a list of ports for a device with [`get_port_graphs`](#api-route-7).
+  - hostname can be either the device hostname or id
+  - ifname can be any of the interface names for the device which can be obtained using [`get_port_graphs`](#api-route-7). Please ensure that the ifname is urlencoded if it needs to be (i.e Gi0/1/0 would need to be urlencoded.
+  - type is the port type you want the graph for, you can request a list of ports for a device with [`get_port_graphs`](#api-route-7).
 
 Input:
 
- - from: This is the date you would like the graph to start - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
- - to: This is the date you would like the graph to end - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
- - width: The graph width, defaults to 1075.
- - height: The graph height, defaults to 300.
- - ifDescr: If this is set to true then we will use ifDescr to lookup the port instead of ifName. Pass the ifDescr value you want to search as you would ifName.
+  - from: This is the date you would like the graph to start - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - to: This is the date you would like the graph to end - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - width: The graph width, defaults to 1075.
+  - height: The graph height, defaults to 300.
+  - ifDescr: If this is set to true then we will use ifDescr to lookup the port instead of ifName. Pass the ifDescr value you want to search as you would ifName.
 
 Example:
 ```curl
@@ -534,17 +683,17 @@ Route: /api/v0/devices
 
 Input:
 
- - order: How to order the output, default is by hostname. Can be prepended by DESC or ASC to change the order.
- - type: can be one of the following to filter or search by:
-   - all: All devices
-   - ignored: Only ignored devices
-   - up: Only devices that are up
-   - down: Only devices that are down
-   - disabled: Disabled devices
-   - mac: search by mac address
-   - ipv4: search by IPv4 address
-   - ipv6: search by IPv6 address (compressed or uncompressed)
- - query: If searching by, then this will be used as the input.
+  - order: How to order the output, default is by hostname. Can be prepended by DESC or ASC to change the order.
+  - type: can be one of the following to filter or search by:
+    - all: All devices
+    - ignored: Only ignored devices
+    - up: Only devices that are up
+    - down: Only devices that are down
+    - disabled: Disabled devices
+    - mac: search by mac address
+    - ipv4: search by IPv4 address
+    - ipv6: search by IPv6 address (compressed or uncompressed)
+  - query: If searching by, then this will be used as the input.
 Example:
 ```curl
 curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices?order=hostname%20DESC&type=down
@@ -599,25 +748,25 @@ Route: /api/v0/devices
 
 Input (JSON):
 
- - hostname: device hostname
- - port: SNMP port (defaults to port defined in config).
- - transport: SNMP protocol (defaults to transport defined in config).
- - version: SNMP version to use, v1, v2c or v3. Defaults to v2c.
- - poller_group: This is the poller_group id used for distributed poller setup. Defaults to 0.
- - force_add: Force the device to be added regardless of it being able to respond to snmp or icmp.
+  - hostname: device hostname
+  - port: SNMP port (defaults to port defined in config).
+  - transport: SNMP protocol (defaults to transport defined in config).
+  - version: SNMP version to use, v1, v2c or v3. Defaults to v2c.
+  - poller_group: This is the poller_group id used for distributed poller setup. Defaults to 0.
+  - force_add: Force the device to be added regardless of it being able to respond to snmp or icmp.
 
- For SNMP v1 or v2c
+For SNMP v1 or v2c
 
- - community: Required for SNMP v1 or v2c.
+  - community: Required for SNMP v1 or v2c.
 
- For SNMP v3
+For SNMP v3
 
- - authlevel: SNMP authlevel (NoAuthNoPriv, AuthNoPriv, AuthPriv).
- - authname: SNMP Auth username
- - authpass: SNMP Auth password
- - authalgo: SNMP Auth algorithm (MD5, SHA)
- - cryptopass: SNMP Crypto Password
- - cryptoalgo: SNMP Crypto algorithm (AES, DES)
+  - authlevel: SNMP authlevel (NoAuthNoPriv, AuthNoPriv, AuthPriv).
+  - authname: SNMP Auth username
+  - authpass: SNMP Auth password
+  - authalgo: SNMP Auth algorithm (MD5, SHA)
+  - cryptopass: SNMP Crypto Password
+  - cryptoalgo: SNMP Crypto algorithm (AES, DES)
 
 Example:
 ```curl
@@ -641,7 +790,7 @@ Route: /api/v0/oxidized
 
 Input (JSON):
 
- -
+  -
 
 Examples:
 ```curl
@@ -669,12 +818,12 @@ Update devices field in the database.
 
 Route: /api/v0/devices/:hostname
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input (JSON):
 
-  - field: The column name within the database
-  - data: The data to update the column with
+  - field: The column name within the database (can be an array of fields)
+  - data: The data to update the column with (can be an array of data))
 
 Examples:
 ```curl
@@ -692,13 +841,28 @@ Output:
 ]
 ```
 
+```curl
+curl -X PATCH -d '{"field": ["notes","purpose"], "data": ["This server should be kept online", "For serving web traffic"]}' -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/devices/localhost
+```
+
+Output:
+
+```text
+[
+    {
+        "status": "ok",
+        "message": "Device fields have been updated"
+    }
+]
+```
+
 ### <a name="api-route-get_device_groups">Function `get_device_groups`</a> [`top`](#top)
 
 List the device groups that a device is matched on.
 
 Route: /api/v0/devices/:hostname/groups
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input (JSON):
 
@@ -770,7 +934,7 @@ List all devices matching the group provided.
 
 Route: /api/v0/devicegroups/:name
 
-- name Is the name of the device group which can be obtained using [`get_devicegroups`](#api-route-get_devicegroups). Please ensure that the name is urlencoded if it needs to be (i.e Linux Servers would need to be urlencoded.
+  - name Is the name of the device group which can be obtained using [`get_devicegroups`](#api-route-get_devicegroups). Please ensure that the name is urlencoded if it needs to be (i.e Linux Servers would need to be urlencoded.
 
 Input (JSON):
 
@@ -785,60 +949,49 @@ Output:
 ```text
 [
      {
-         "status": "error",
-         "message": "Found 1 in group LinuxServers",
-         "count": 1,
+         "status": "ok",
+         "message": "Found 3 in group LinuxServers",
+         "count": 3,
          "devices": [
-             {
-                 "device_id": "1",
-                 "hostname": "localhost",
-                 "sysName": "hostname",
-                 "community": "librenms",
-                 "authlevel": null,
-                 "authname": null,
-                 "authpass": null,
-                 "authalgo": null,
-                 "cryptopass": null,
-                 "cryptoalgo": null,
-                 "snmpver": "v2c",
-                 "port": "161",
-                 "transport": "udp",
-                 "timeout": null,
-                 "retries": null,
-                 "bgpLocalAs": null,
-                 "sysObjectID": ".1.3.6.1.4.1.8072.3.2.10",
-                 "sysDescr": "Linux li1045-133.members.linode.com 4.1.5-x86_64-linode61 #7 SMP Mon Aug 24 13:46:31 EDT 2015 x86_64",
-                 "sysContact": "",
-                 "version": "4.1.5-x86_64-linode61",
-                 "hardware": "Generic x86 64-bit",
-                 "features": "CentOS 7.1.1503",
-                 "location": "",
-                 "os": "linux",
-                 "status": "1",
-                 "status_reason": "",
-                 "ignore": "0",
-                 "disabled": "0",
-                 "uptime": "4615964",
-                 "agent_uptime": "0",
-                 "last_polled": "2015-12-12 13:20:04",
-                 "last_poll_attempted": null,
-                 "last_polled_timetaken": "1.90",
-                 "last_discovered_timetaken": "79.53",
-                 "last_discovered": "2015-12-12 12:34:21",
-                 "last_ping": "2015-12-12 13:20:04",
-                 "last_ping_timetaken": "0.08",
-                 "purpose": null,
-                 "type": "server",
-                 "serial": null,
-                 "icon": null,
-                 "poller_group": "0",
-                 "override_sysLocation": "0",
-                 "notes": "Nope"
-             }
+            {
+                "device_id": "15"
+            },
+            {
+                "device_id": "18"
+            },
+            {
+                "device_id": "20"
+            }
          ]
      }
 ]
 ```
+
+## <a name="api-portgroups">`Port Groups`</a> [`top`](#top)
+
+### <a name="api-route-get_graph_by_portgroup">Function: `get_graph_by_portgroup`</a> [`top`](#top)
+
+Get the graph based on the group type.
+
+Route: /api/v0/devices/portgroups/:group
+
+  - group is the type of port group graph you want, I.e Transit, Peering, etc. You can specify multiple types comma separated.
+
+Input:
+
+  - from: This is the date you would like the graph to start - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - to: This is the date you would like the graph to end - See http://oss.oetiker.ch/rrdtool/doc/rrdgraph.en.html for more information.
+  - width: The graph width, defaults to 1075.
+  - height: The graph height, defaults to 300.
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/portgroups/transit,peering
+```
+
+Output:
+
+Output is an image.
 
 ## <a name="api-routing">`Routing`</a> [`top`](#top)
 
@@ -850,7 +1003,7 @@ Route: /api/v0/bgp
 
 Input:
 
- - hostname = either the devices hostname or id.
+  - hostname = either the devices hostname or id.
 
 Example:
 ```curl
@@ -875,11 +1028,11 @@ List the current IPSec tunnels which are active.
 
 Route: /api/v0/routing/ipsec/data/:hostname
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -914,11 +1067,11 @@ Get a list of all VLANs for a given device.
 
 Route: /api/v0/devices/:hostname/vlans
 
-- hostname can be either the device hostname or id
+  - hostname can be either the device hostname or id
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -950,11 +1103,11 @@ Get details of an alert
 
 Route: /api/v0/alerts/:id
 
-- id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
+  - id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -987,11 +1140,11 @@ Acknowledge an alert
 
 Route: /api/v0/alerts/:id
 
-- id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
+  - id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -1013,11 +1166,11 @@ Unmute an alert
 
 Route: /api/v0/alerts/unmute/:id
 
-- id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
+  - id is the alert id, you can obtain a list of alert ids from [`list_alerts`](#api-route-14).
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -1042,7 +1195,7 @@ Route: /api/v0/alerts
 
 Input:
 
- - state: Filter the alerts by state, 0 = ok, 1 = alert, 2 = ack
+  - state: Filter the alerts by state, 0 = ok, 1 = alert, 2 = ack
 
 Example:
 ```curl
@@ -1076,11 +1229,11 @@ Get the alert rule details.
 
 Route: /api/v0/rules/:id
 
- - id is the rule id.
+  - id is the rule id.
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -1113,11 +1266,11 @@ Delete an alert rule by id
 
 Route: /api/v0/rules/:id
 
- - id is the rule id.
+  - id is the rule id.
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -1139,11 +1292,11 @@ List the alert rules.
 
 Route: /api/v0/rules
 
- -
+  -
 
 Input:
 
- -
+  -
 
 Example:
 ```curl
@@ -1175,20 +1328,19 @@ Add a new alert rule.
 
 Route: /api/v0/rules
 
- -
+  -
 
 Input (JSON):
 
- - device_id: This is either the device id or -1 for a global rule
- - rule: The rule which should be in the format %entity $condition $value (i.e %devices.status != 0 for devices marked as down).
- - severity: The severity level the alert will be raised against, Ok, Warning, Critical.
- - disabled: Whether the rule will be disabled or not, 0 = enabled, 1 = disabled
- - count: This is how many polling runs before an alert will trigger and the frequency.
- - delay: Delay is when to start alerting and how frequently. The value is stored in seconds but you can specify minutes, hours or days by doing 5 m, 5 h, 5 d for each one.
- - mute: If mute is enabled then an alert will never be sent but will show up in the Web UI (true or false).
- - invert: This would invert the rules check.
- - name: This is the name of the rule and is mandatory.
-
+  - device_id: This is either the device id or -1 for a global rule
+  - rule: The rule which should be in the format %entity $condition $value (i.e %devices.status != 0 for devices marked as down).
+  - severity: The severity level the alert will be raised against, Ok, Warning, Critical.
+  - disabled: Whether the rule will be disabled or not, 0 = enabled, 1 = disabled
+  - count: This is how many polling runs before an alert will trigger and the frequency.
+  - delay: Delay is when to start alerting and how frequently. The value is stored in seconds but you can specify minutes, hours or days by doing 5 m, 5 h, 5 d for each one.
+  - mute: If mute is enabled then an alert will never be sent but will show up in the Web UI (true or false).
+  - invert: This would invert the rules check.
+  - name: This is the name of the rule and is mandatory.
 
 Example:
 ```curl
@@ -1210,20 +1362,20 @@ Edit an existing alert rule
 
 Route: /api/v0/rules
 
- -
+  -
 
 Input (JSON):
 
- - rule_id: You must specify the rule_id to edit an existing rule, if this is absent then a new rule will be created.
- - device_id: This is either the device id or -1 for a global rule
- - rule: The rule which should be in the format %entity $condition $value (i.e %devices.status != 0 for devices marked as down).
- - severity: The severity level the alert will be raised against, Ok, Warning, Critical.
- - disabled: Whether the rule will be disabled or not, 0 = enabled, 1 = disabled
- - count: This is how many polling runs before an alert will trigger and the frequency.
- - delay: Delay is when to start alerting and how frequently. The value is stored in seconds but you can specify minutes, hours or days by doing 5 m, 5 h, 5 d for each one.
- - mute: If mute is enabled then an alert will never be sent but will show up in the Web UI (true or false).
- - invert: This would invert the rules check.
- - name: This is the name of the rule and is mandatory.
+  - rule_id: You must specify the rule_id to edit an existing rule, if this is absent then a new rule will be created.
+  - device_id: This is either the device id or -1 for a global rule
+  - rule: The rule which should be in the format %entity $condition $value (i.e %devices.status != 0 for devices marked as down).
+  - severity: The severity level the alert will be raised against, Ok, Warning, Critical.
+  - disabled: Whether the rule will be disabled or not, 0 = enabled, 1 = disabled
+  - count: This is how many polling runs before an alert will trigger and the frequency.
+  - delay: Delay is when to start alerting and how frequently. The value is stored in seconds but you can specify minutes, hours or days by doing 5 m, 5 h, 5 d for each one.
+  - mute: If mute is enabled then an alert will never be sent but will show up in the Web UI (true or false).
+  - invert: This would invert the rules check.
+  - name: This is the name of the rule and is mandatory.
 
 Example:
 ```curl
@@ -1247,12 +1399,12 @@ Retrieve the inventory for a device. If you call this without any parameters the
 
 Route: /api/v0/inventory/:hostname
 
- - hostname can be either the device hostname or the device id
+  - hostname can be either the device hostname or the device id
 
 Input:
 
- - entPhysicalClass: This is used to restrict the class of the inventory, for example you can specify chassis to only return items in the inventory that are labelled as chassis.
- - entPhysicalContainedIn: This is used to retrieve items within the inventory assigned to a previous component, for example specifying the chassis (entPhysicalIndex) will retrieve all items where the chassis is the parent.
+  - entPhysicalClass: This is used to restrict the class of the inventory, for example you can specify chassis to only return items in the inventory that are labelled as chassis.
+  - entPhysicalContainedIn: This is used to retrieve items within the inventory assigned to a previous component, for example specifying the chassis (entPhysicalIndex) will retrieve all items where the chassis is the parent.
 
 Example:
 ```curl
@@ -1353,9 +1505,9 @@ Route: /api/v0/bills/:id
        /api/v0/bills?ref=:ref
        /api/v0/bills?custid=:custid
 
- - id is the specific bill id
- - ref is the billing reference
- - custid is the customer reference
+  - id is the specific bill id
+  - ref is the billing reference
+  - custid is the customer reference
 
 Input:
 
@@ -1411,11 +1563,11 @@ Retrieve a specific ARP entry or all ARP enties for a device
 
 Route: /api/v0/resources/ip/arp/:ip
 
- - ip is the specific IP you would like to query, if this is all then you need to pass ?device=_hostname_ (or device id)
+  - ip is the specific IP you would like to query, if this is all then you need to pass ?device=_hostname_ (or device id)
 
 Input:
 
- - device if you specify all for the IP then you need to populate this with the hostname or id of the device.
+  - device if you specify all for the IP then you need to populate this with the hostname or id of the device.
 
 Example:
 ```curl
@@ -1436,6 +1588,113 @@ Output:
             "ipv4_address": "1.1.1.1",
             "context_name": ""
         }
+    ]
+}
+```
+
+### <a name="api-services-list_services">Function: `list_services`</a> [`top`](#top)
+
+Retrieve all services
+
+Route: /api/v0/services
+
+Input:
+
+  - state: only which have a certain state (valid options are 0=Ok, 1=Warning, 2=Critical).
+  - type: service type, used sql LIKE to find services, so for tcp, use type=tcp for http use type=http
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services?state=2
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services?state=0&type=tcp
+```
+
+Output:
+```text
+{
+    "status": "ok",
+    "err-msg": "",
+    "count": 1,
+    "services": [
+        [
+            {
+                "service_id": "13",
+                "device_id": "1",
+                "service_ip": "demo1.yourdomian.net",
+                "service_type": "ntp_peer",
+                "service_desc": "NTP",
+                "service_param": "-H 192.168.1.10",
+                "service_ignore": "0",
+                "service_status": "0",
+                "service_changed": "1470962470",
+                "service_message": "NTP OK: Offset -0.000717 secs",
+                "service_disabled": "0",
+                "service_ds": "{\"offset\":\"s\"}"
+            }
+        ],
+        [
+            {
+                "service_id": "2",
+                "device_id": "2",
+                "service_ip": "demo2.yourdomian.net",
+                "service_type": "esxi_hardware.py",
+                "service_desc": "vmware hardware",
+                "service_param": "-H 192.168.1.11 -U USER -P PASS -p",
+                "service_ignore": "0",
+                "service_status": "0",
+                "service_changed": "1471702206",
+                "service_message": "OK - Server: Supermicro X9SCL/X9SCM s/n: 0123456789 System BIOS: 2.2 2015-02-20",
+                "service_disabled": "0",
+                "service_ds": "{\"P2Vol_0_Processor_1_Vcore\":\"\",\"P2Vol_1_System_Board_1_-12V\":\"\",\"P2Vol_2_System_Board_1_12V\":\"\",\"P2Vol_3_System_Board_1_3.3VCC\":\"\",\"P2Vol_4_System_Board_1_5VCC\":\"\",\"P2Vol_5_System_Board_1_AVCC\":\"\",\"P2Vol_6_System_Board_1_VBAT\":\"\",\"P2Vol_7_System_Board_1_"
+            }
+        ]
+    ]
+}
+```
+### <a name="api-services-get_service_for_host">Function: `get_service_for_host`</a> [`top`](#top)
+
+Retrieve services for device
+
+Route: /api/v0/services/:hostname
+
+  - id or hostname is the specific device
+
+Input:
+
+  - state: only which have a certain state (valid options are 0=Ok, 1=Warning, 2=Critical).
+  - type: service type, used sql LIKE to find services, so for tcp, use type=tcp for http use type=http
+
+Example:
+```curl
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services/:hostname
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services/:hostname?state=2
+curl -H 'X-Auth-Token: YOURAPITOKENHERE' https://librenms.org/api/v0/services/:hostname?state=0&type=tcp
+```
+
+Output:
+```text
+{
+    "status": "ok",
+    "err-msg": "",
+    "count": 1,
+    "services": [
+        [
+            {
+                "service_id": "2",
+                "device_id": "2",
+                "service_ip": "demo2.yourdomian.net",
+                "service_type": "esxi_hardware.py",
+                "service_desc": "vmware hardware",
+                "service_param": "-H 192.168.1.11 -U USER -P PASS -p",
+                "service_ignore": "0",
+                "service_status": "0",
+                "service_changed": "1471702206",
+                "service_message": "OK - Server: Supermicro X9SCL/X9SCM s/n: 0123456789 System BIOS: 2.2 2015-02-20",
+                "service_disabled": "0",
+                "service_ds": "{\"P2Vol_0_Processor_1_Vcore\":\"\",\"P2Vol_1_System_Board_1_-12V\":\"\",\"P2Vol_2_System_Board_1_12V\":\"\",\"P2Vol_3_System_Board_1_3.3VCC\":\"\",\"P2Vol_4_System_Board_1_5VCC\":\"\",\"P2Vol_5_System_Board_1_AVCC\":\"\",\"P2Vol_6_System_Board_1_VBAT\":\"\",\"P2Vol_7_System_Board_1_"
+            }
+        ]
     ]
 }
 ```

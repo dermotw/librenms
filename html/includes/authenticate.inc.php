@@ -1,5 +1,7 @@
 <?php
 
+use Phpass\PasswordHash;
+
 @ini_set('session.use_only_cookies', 1);
 @ini_set('session.cookie_httponly', 1);
 
@@ -37,22 +39,17 @@ if ($vars['page'] == 'logout' && $_SESSION['authenticated']) {
 
 // We are only interested in login details passed via POST.
 if (isset($_POST['username']) && isset($_POST['password'])) {
-    $_SESSION['username'] = mres($_POST['username']);
+    $_SESSION['username'] = clean($_POST['username']);
     $_SESSION['password'] = $_POST['password'];
 } elseif (isset($_GET['username']) && isset($_GET['password'])) {
-    $_SESSION['username'] = mres($_GET['username']);
+    $_SESSION['username'] = clean($_GET['username']);
     $_SESSION['password'] = $_GET['password'];
+} elseif (isset($_SERVER['REMOTE_USER'])) {
+    $_SESSION['username'] = $_SERVER['REMOTE_USER'];
 }
 
 if (!isset($config['auth_mechanism'])) {
     $config['auth_mechanism'] = 'mysql';
-}
-
-if (file_exists('includes/authentication/'.$config['auth_mechanism'].'.inc.php')) {
-    include_once 'includes/authentication/'.$config['auth_mechanism'].'.inc.php';
-} else {
-    print_error('ERROR: no valid auth_mechanism defined!');
-    exit();
 }
 
 $auth_success = 0;
@@ -102,7 +99,12 @@ if ((isset($_SESSION['username'])) || (isset($_COOKIE['sess_id'],$_COOKIE['token
             exit;
         }
     } elseif (isset($_SESSION['username'])) {
-        $auth_message = 'Authentication Failed';
+        global $auth_error;
+        if (isset($auth_error)) {
+            $auth_message = $auth_error;
+        } else {
+            $auth_message = 'Authentication Failed';
+        }
         unset($_SESSION['authenticated']);
         dbInsert(array('user' => $_SESSION['username'], 'address' => get_client_ip(), 'result' => 'Authentication Failure'), 'authlog');
     }

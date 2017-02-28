@@ -51,7 +51,7 @@ foreach (dbFetchRows($sql, $param) as $sensor) {
         $sensor['sensor_current'] = 'NaN';
     } else {
         if ($sensor['sensor_current'] >= $sensor['sensor_limit']) {
-            $alert = '<img src="images/16/flag_red.png" alt="alert" />';
+            $alert = '<i class="fa fa-flag fa-lg" style="color:red" aria-hidden="true"></i>';
         } else {
             $alert = '';
         }
@@ -93,7 +93,7 @@ foreach (dbFetchRows($sql, $param) as $sensor) {
     $graph_array['from'] = $config['time']['day'];
     $sensor_minigraph =  generate_lazy_graph_tag($graph_array);
 
-    $sensor['sensor_descr'] = truncate($sensor['sensor_descr'], 48, '');
+    $sensor['sensor_descr'] = substr($sensor['sensor_descr'], 0, 48);
 
     $response[] = array(
         'hostname'       => generate_device_link($sensor),

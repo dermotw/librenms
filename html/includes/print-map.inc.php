@@ -40,14 +40,10 @@ $devices = array();
 
 $where = "";
 if (is_numeric($vars['group'])) {
-    $group_pattern = dbFetchCell('SELECT `pattern` FROM `device_groups` WHERE id = '.$vars['group']);
-    $group_pattern = rtrim($group_pattern, '&&');
-    $group_pattern = rtrim($group_pattern, '||');
-
-    $device_id_sql = GenGroupSQL($group_pattern);
-    if ($device_id_sql) {
-        $where .= " AND D1.device_id IN ($device_id_sql) OR D2.device_id IN ($device_id_sql)";
-    }
+    $where .= " AND D1.device_id IN (SELECT `device_id` FROM `device_group_device` WHERE `device_group_id` = ?)";
+    $sql_array[] = $vars['group'];
+    $where .= " OR D2.device_id IN (SELECT `device_id` FROM `device_group_device` WHERE `device_group_id` = ?)";
+    $sql_array[] = $vars['group'];
 }
 
 if (in_array('mac', $config['network_map_items'])) {
@@ -88,7 +84,7 @@ if (in_array('mac', $config['network_map_items'])) {
                              `D1`.`device_id` != `D2`.`device_id`
                              $where
                              $sql
-                      GROUP BY `P1`.`port_id`,`P2`.`port_id`
+                      GROUP BY `P1`.`port_id`,`P2`.`port_id`,`D1`.`device_id`, `D1`.`os`, `D1`.`hostname`, `D2`.`device_id`, `D2`.`os`, `D2`.`hostname`, `P1`.`port_id`, `P1`.`device_id`, `P1`.`ifName`, `P1`.`ifSpeed`, `P1`.`ifOperStatus`, `P1`.`ifAdminStatus`, `P1`.`ifInOctets_rate`, `P1`.`ifOutOctets_rate`, `P2`.`port_id`, `P2`.`device_id`, `P2`.`ifName`, `P2`.`ifSpeed`, `P2`.`ifOperStatus`, `P2`.`ifAdminStatus`, `P2`.`ifInOctets_rate`, `P2`.`ifOutOctets_rate`
                       ORDER BY `remote_matching_ips` DESC, `local_ifname`, `remote_ifname`
                      ", $sql_array);
 }
@@ -129,7 +125,7 @@ if (in_array('xdp', $config['network_map_items'])) {
                              `remote_device_id` != 0
                              $where
                              $sql
-                      GROUP BY `P1`.`port_id`,`P2`.`port_id`
+                      GROUP BY `P1`.`port_id`,`P2`.`port_id`,`D1`.`device_id`, `D1`.`os`, `D1`.`hostname`, `D2`.`device_id`, `D2`.`os`, `D2`.`hostname`, `P1`.`port_id`, `P1`.`device_id`, `P1`.`ifName`, `P1`.`ifSpeed`, `P1`.`ifOperStatus`, `P1`.`ifAdminStatus`, `P1`.`ifInOctets_rate`, `P1`.`ifOutOctets_rate`, `P2`.`port_id`, `P2`.`device_id`, `P2`.`ifName`, `P2`.`ifSpeed`, `P2`.`ifOperStatus`, `P2`.`ifAdminStatus`, `P2`.`ifInOctets_rate`, `P2`.`ifOutOctets_rate`
                       ORDER BY `local_ifname`, `remote_ifname`
                       ", $sql_array);
 }

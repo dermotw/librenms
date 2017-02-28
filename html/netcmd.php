@@ -7,7 +7,6 @@
  *
  * @package    librenms
  * @subpackage webinterface
- * @author     Adam Armstrong <adama@memetic.org>
  * @copyright  (C) 2006 - 2012 Adam Armstrong
  */
 
@@ -21,12 +20,8 @@ if ($_GET[debug]) {
     ini_set('error_reporting', E_ALL);
 }
 
-require '../includes/defaults.inc.php';
-require '../config.php';
-require_once '../includes/definitions.inc.php';
-require 'includes/functions.inc.php';
-require '../includes/functions.php';
-require 'includes/authenticate.inc.php';
+$init_modules = array('web', 'auth');
+require realpath(__DIR__ . '/..') . '/includes/init.php';
 
 if (!$_SESSION['authenticated']) {
     echo 'unauthenticated';
@@ -35,8 +30,8 @@ if (!$_SESSION['authenticated']) {
 
 $output = '';
 if ($_GET['query'] && $_GET['cmd']) {
-    $host = $_GET['query'];
-    if (Net_IPv6::checkIPv6($host) || Net_IPv4::validateip($host) || filter_var('http://'.$host, FILTER_VALIDATE_URL)) {
+    $host = clean($_GET['query']);
+    if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) || filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) || filter_var('http://'.$host, FILTER_VALIDATE_URL)) {
         switch ($_GET['cmd']) {
             case 'whois':
                 $cmd = $config['whois']." $host | grep -v \%";

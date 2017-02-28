@@ -1,3 +1,4 @@
+source: Extensions/RRDCached.md
 # Setting up RRDCached
 
 This document will explain how to setup RRDCached for LibreNMS.
@@ -7,7 +8,68 @@ If you have rrdcached 1.5.5 or above, we can also tune over rrdcached.
 To enable this set the following config:
 
 ```php
-$config['rrdtool_version'] = 1.5.5;
+$config['rrdtool_version'] = '1.5.5';
+```
+
+### Support matrix
+
+Shared FS: Is a shared filesystem required?
+
+Features: Supported features in the version indicated.
+
+          G = Graphs.
+
+          C = Create RRD files.
+
+          U = Update RRD files.
+
+          T = Tune RRD files.
+
+| Version | Shared FS | Features |
+| ------- | :-------: | -------- |
+| 1.4.x   | Yes       | G,U      |
+| <1.5.5  | Yes       | G,U      |
+| >=1.5.5 | No        | G,C,U    |
+| >=1.6.x | No        | G,C,U    |
+
+### RRDCached installation Debian Jessie (rrdcached 1.4.8)
+```ssh
+sudo apt-get install rrdcached
+```
+
+- Edit /opt/librenms/config.php to include:
+```php
+$config['rrdcached']    = "unix:/var/run/rrdcached.sock";
+```
+- Edit /etc/default/rrdcached to include:
+```ssh
+OPTS="-s librenms"
+OPTS="$OPTS -l unix:/var/run/rrdcached.sock"
+OPTS="$OPTS -j /var/lib/rrdcached/journal/ -F"
+OPTS="$OPTS -b /opt/librenms/rrd/ -B"
+OPTS="$OPTS -w 1800 -z 1800 -f 3600 -t 4"
+```
+
+### RRDCached installation Ubuntu 16
+```ssh
+sudo apt-get install rrdcached
+```
+
+- Edit /opt/librenms/config.php to include:
+```php
+$config['rrdcached']    = "unix:/var/run/rrdcached.sock";
+```
+- Edit /etc/default/rrdcached to include:
+```ssh
+DAEMON=/usr/bin/rrdcached
+WRITE_TIMEOUT=1800
+WRITE_JITTER=1800
+BASE_PATH=/opt/librenms/rrd/
+JOURNAL_PATH=/var/lib/rrdcached/journal/
+PIDFILE=/var/run/rrdcached.pid
+SOCKFILE=/var/run/rrdcached.sock
+SOCKGROUP=librenms
+BASE_OPTIONS="-B -F"
 ```
 
 ### RRDCached installation CentOS 6
@@ -106,6 +168,8 @@ Disk I/O can be found under the menu Devices>All Devices>[localhost hostname]>He
 
 Depending on many factors, you should see the Ops/sec drop by ~30-40%.
 
+#### Securing RRCached
+Please see [RRDCached Security](RRDCached-Security.md)
 
 [1]: http://librenms.readthedocs.org/Installation/Installation-CentOS-7-Apache/
 "Add localhost to LibreNMS"

@@ -24,21 +24,49 @@ if ($_POST['editing']) {
             dbUpdate(array('location'=>$override_sysLocation_string), 'devices', '`device_id`=?', array($device['device_id']));
         }
 
+        if ($device['type'] != $vars['type']) {
+            $param['type'] = $vars['type'];
+            $update_type = true;
+        }
+
         #FIXME needs more sanity checking! and better feedback
 
-        $param = array('purpose' => $_POST['descr'], 'type' => $_POST['type'], 'ignore' => $_POST['ignore'], 'disabled' => $_POST['disabled']);
+        $param['purpose']  = $vars['descr'];
+        $param['ignore']   = set_numeric($vars['ignore']);
+        $param['disabled'] = set_numeric($vars['disabled']);
 
         $rows_updated = dbUpdate($param, 'devices', '`device_id` = ?', array($device['device_id']));
 
         if ($rows_updated > 0 || $updated) {
+            if ($update_type === true) {
+                set_dev_attrib($device, 'override_device_type', true);
+            }
             $update_message = "Device record updated.";
             $updated = 1;
             $device = dbFetchRow("SELECT * FROM `devices` WHERE `device_id` = ?", array($device['device_id']));
-        } elseif ($rows_updated = '-1') {
+        } elseif ($rows_updated == 0) {
             $update_message = "Device record unchanged. No update necessary.";
             $updated = -1;
         } else {
             $update_message = "Device record update error.";
+        }
+        if (isset($_POST['hostname']) && $_POST['hostname'] !== '' && $_POST['hostname'] !== $device['hostname']) {
+            if (is_admin()) {
+                $result = renamehost($device['device_id'], $_POST['hostname'], 'webui');
+                if ($result == "") {
+                    print_message("Hostname updated from {$device['hostname']} to {$_POST['hostname']}");
+                    echo '
+                        <script>
+                            var loc = window.location;
+                            window.location.replace(loc.protocol + "//" + loc.host + loc.pathname + loc.search);
+                        </script>
+                    ';
+                } else {
+                    print_error($result . ".  Does your web server have permission to modify the rrd files?");
+                }
+            } else {
+                print_error('Only administrative users may update the device hostname');
+            }
         }
     } else {
         include 'includes/error-no-perm.inc.php';
@@ -46,7 +74,6 @@ if ($_POST['editing']) {
 }
 
 $descr  = $device['purpose'];
-
 $override_sysLocation = $device['override_sysLocation'];
 $override_sysLocation_string = $device['location'];
 
@@ -78,10 +105,19 @@ if ($updated && $update_message) {
 <br>
 <form id="edit" name="edit" method="post" action="" role="form" class="form-horizontal">
 <input type=hidden name="editing" value="yes">
-    <div class="form-group">
+    <div class="form-group" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Change the hostname used for name resolution" >
+        <label for="edit-hostname-input" class="col-sm-2 control-label" >Hostname:</label>
+        <div class="col-sm-6">
+            <input type="text" id="edit-hostname-input" name="hostname" class="form-control" disabled value=<?php echo(display($device['hostname'])); ?> />
+        </div>
+        <div class="col-sm-2">
+            <button name="hostname-edit-button" id="hostname-edit-button" class="btn btn-danger"> <i class="fa fa-pencil"></i> </button>
+        </div>
+    </div>
+     <div class="form-group">
         <label for="descr" class="col-sm-2 control-label">Description:</label>
         <div class="col-sm-6">
-            <textarea id="descr" name="descr" class="form-control"><?php echo($device['purpose']); ?></textarea>
+            <textarea id="descr" name="descr" class="form-control"><?php echo(display($device['purpose'])); ?></textarea>
         </div>
     </div>
     <div class="form-group">
@@ -164,6 +200,15 @@ if ($updated && $update_message) {
                 toastr.error('An error occured setting this device to be rediscovered');
             }
         });
+    });
+    $('#hostname-edit-button').click(function(e) {
+        e.preventDefault();
+        disabled_state = document.getElementById('edit-hostname-input').disabled;
+        if (disabled_state == true) {
+            document.getElementById('edit-hostname-input').disabled = false;
+        } else {
+            document.getElementById('edit-hostname-input').disabled = true;
+        }
     });
 </script>
 <?php

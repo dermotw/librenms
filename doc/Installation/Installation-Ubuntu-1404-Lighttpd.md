@@ -1,3 +1,4 @@
+source: Installation/Installation-Ubuntu-1404-Lighttpd.md
 > NOTE: What follows is a very rough list of commands. I have taken the INSTALL.md and modified it for Lighttpd on Debian 7
 
 > NOTE: These instructions assume you are the root user.  If you are not, prepend `sudo` to all shell commands (the ones that aren't at `mysql>` prompts) or temporarily become a user with root privileges with `sudo -s`.
@@ -183,6 +184,12 @@ If the thread count needs to be changed, you can do so by editing the cron file 
 Create the cronjob
 
     cp librenms.nonroot.cron /etc/cron.d/librenms
+
+### Copy logrotate config ###
+
+LibreNMS keeps logs in `/opt/librenms/logs`. Over time these can become large and be rotated out.  To rotate out the old logs you can use the provided logrotate config file:
+
+    cp misc/librenms.logrotate /etc/logrotate.d/librenms
 
 ### Daily Updates ###
 

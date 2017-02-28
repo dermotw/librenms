@@ -18,10 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once $config['install_dir'] . "/includes/rrdtool.inc.php";
-require_once $config['install_dir'] . "/includes/influxdb.inc.php";
-
-
 /**
  * Filter all elements with keys that start with 'rrd_'
  *
@@ -53,7 +49,8 @@ function rrd_array_filter($arr)
  * @param array $device
  * @param string $measurement Name of this measurement
  * @param array $tags tags for the data (or to control rrdtool)
- * @param array $fields
+ * @param array|mixed $fields The data to update in an associative array, the order must be consistent with rrd_def,
+ *                            single values are allowed and will be paired with $measurement
  */
 function data_update($device, $measurement, $tags, $fields)
 {
@@ -71,4 +68,3 @@ function data_update($device, $measurement, $tags, $fields)
     rrdtool_data_update($device, $measurement, $tags, $fields);
     influx_update($device, $measurement, rrd_array_filter($tags), $fields);
 } // data_update
-

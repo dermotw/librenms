@@ -20,7 +20,7 @@ function authenticate($username, $password)
             ldap_set_option($ldap_connection, LDAP_OPT_PROTOCOL_VERSION, $config['auth_ldap_version']);
         }
 
-        if (ldap_bind($ldap_connection, $config['auth_ldap_prefix'].$username.$config['auth_ldap_suffix'], $password)) {
+        if ($password && ldap_bind($ldap_connection, $config['auth_ldap_prefix'].$username.$config['auth_ldap_suffix'], $password)) {
             if (!$config['auth_ldap_group']) {
                 return 1;
             } else {
@@ -37,6 +37,8 @@ function authenticate($username, $password)
                     }
                 }
             }
+        } elseif (!isset($password) || $password == '') {
+            echo 'A password is required';
         } else {
             echo ldap_error($ldap_connection);
         }
@@ -190,7 +192,7 @@ function get_user($user_id)
 {
     foreach (get_userlist() as $users) {
         if ($users['user_id'] === $user_id) {
-            return $users['username'];
+            return $users;
         }
     }
     return 0;

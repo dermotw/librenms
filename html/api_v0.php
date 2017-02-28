@@ -12,18 +12,11 @@
  * the source code distribution for details.
  */
 
-require_once '../includes/defaults.inc.php';
-require_once '../config.php';
-require_once '../includes/definitions.inc.php';
-require_once '../includes/common.php';
-require_once '../includes/dbFacile.php';
-require_once '../includes/rewrites.php';
-require_once 'includes/functions.inc.php';
-require_once '../includes/rrdtool.inc.php';
-require 'lib/Slim/Slim.php';
-\Slim\Slim::registerAutoloader();
+$init_modules = array('web', 'alerts');
+require realpath(__DIR__ . '/..') . '/includes/init.php';
+
 $app = new \Slim\Slim();
-require_once 'includes/api_functions.inc.php';
+require $config['install_dir'] . '/html/includes/api_functions.inc.php';
 $app->setName('api');
 
 $app->group(
@@ -47,6 +40,8 @@ $app->group(
                         // api/v0/devices/$hostname/vlans
                         $app->get('/:hostname/graphs', 'authToken', 'get_graphs')->name('get_graphs');
                         // api/v0/devices/$hostname/graphs
+                        $app->get('/:hostname/health(/:type)(/:sensor_id)', 'authToken', 'list_available_health_graphs')->name('list_available_health_graphs');
+                        // api/v0/devices/$hostname/health
                         $app->get('/:hostname/ports', 'authToken', 'get_port_graphs')->name('get_port_graphs');
                         $app->get('/:hostname/port_stack', 'authToken', 'get_port_stack')->name('get_port_stack');
                         // api/v0/devices/$hostname/ports
@@ -55,6 +50,7 @@ $app->group(
                         $app->put('/:hostname/components', 'authToken', 'edit_components')->name('edit_components');
                         $app->delete('/:hostname/components/:component', 'authToken', 'delete_components')->name('delete_components');
                         $app->get('/:hostname/groups', 'authToken', 'get_device_groups')->name('get_device_groups');
+                        $app->get('/:hostname/graphs/health/:type(/:sensor_id)', 'authToken', 'get_graph_generic_by_hostname')->name('get_health_graph');
                         $app->get('/:hostname/:type', 'authToken', 'get_graph_generic_by_hostname')->name('get_graph_generic_by_hostname');
                         // api/v0/devices/$hostname/$type
                         $app->get('/:hostname/ports/:ifname', 'authToken', 'get_port_stats_by_port_hostname')->name('get_port_stats_by_port_hostname');
@@ -154,6 +150,15 @@ $app->group(
                     }
                 );
                 // End Resources
+                // Service section
+                $app->group(
+                    '/services',
+                    function () use ($app) {
+                        $app->get('/:hostname', 'authToken', 'list_services')->name('get_service_for_host');
+                    }
+                );
+                $app->get('/services', 'authToken', 'list_services')->name('list_services');
+                // End Service
             }
         );
         $app->get('/v0', 'authToken', 'show_endpoints');

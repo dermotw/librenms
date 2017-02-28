@@ -1,3 +1,4 @@
+source: Extensions/Services.md
 # Setting up Services
 
 Services within LibreNMS provides the ability to use Nagios plugins to perform additional monitoring outside of SNMP.
@@ -6,6 +7,9 @@ These services are tied into an existing device so you need at least one device 
 to LibreNMS - localhost is a good one.
 
 ## Setup
+
+> Service checks is now distributed aware. If you run a distributed setup then you can now run 
+`services-wrapper.py` in cron instead of `check-services.php` across all polling nodes.
 
 Firstly, install Nagios plugins however you would like, this could be via yum, apt-get or direct from source.
 

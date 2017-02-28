@@ -1,9 +1,8 @@
 <?php
 
-if( key_exists('vrf_lite_cisco', $device) && (count($device['vrf_lite_cisco'])!=0) ){
+if (key_exists('vrf_lite_cisco', $device) && (count($device['vrf_lite_cisco'])!=0)) {
     $vrfs_lite_cisco = $device['vrf_lite_cisco'];
-} 
-else {
+} else {
     $vrfs_lite_cisco = array(array('context_name'=>null));
 }
 foreach ($vrfs_lite_cisco as $vrf) {
@@ -33,8 +32,7 @@ foreach ($vrfs_lite_cisco as $vrf) {
                 if ($do == 2) {
                     $adsep = ':';
                     $do    = '0';
-                }
-                else {
+                } else {
                     $adsep = '';
                 }
             }
@@ -67,7 +65,7 @@ foreach ($vrfs_lite_cisco as $vrf) {
         } //end foreach
     } //end if
 
-    $sql = "SELECT * FROM ipv6_addresses AS A, ports AS I WHERE I.device_id = '".$device['device_id']."' AND  A.port_id = I.port_id'";
+    $sql = "SELECT * FROM ipv6_addresses AS A, ports AS I WHERE I.device_id = '".$device['device_id']."' AND  A.port_id = I.port_id";
 
     foreach (dbFetchRows($sql) as $row) {
         $full_address  = $row['ipv6_address'].'/'.$row['ipv6_prefixlen'];

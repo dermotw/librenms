@@ -1,3 +1,4 @@
+source: Support/Poller Support.md
 ### poller.php
 
 This document will explain how to use poller.php to debug issues or manually running to process data.
@@ -16,7 +17,9 @@ This document will explain how to use poller.php to debug issues or manually run
 
 Debugging and testing options:
 -r                                           Do not create or update RRDs
+-f                                           Do not insert data into InfluxDB
 -d                                           Enable debugging output
+-v                                           Enable verbose debugging output
 -m                                           Specify module(s) to be run
 ```
 
@@ -27,8 +30,9 @@ even. all will run poller against all devices.
 
 `-r` This option will suppress the creation or update of RRD files.
 
-`-d` Enables debugging output (verbose output) so that you can see what is happening during a poller run. This includes
-things like rrd updates, SQL queries and response from snmp.
+`-d` Enables debugging output (verbose output but with most sensitive data masked) so that you can see what is happening during a poller run. This includes things like rrd updates, SQL queries and response from snmp.
+
+`-v` Enables verbose debugging output with all data in tact.
 
 `-m` This enables you to specify the module you want to run for poller.
 
@@ -70,6 +74,20 @@ $config['poller_modules']['entity-physical']              = 1;
 $config['poller_modules']['applications']                 = 1;
 $config['poller_modules']['cisco-asa-firewall']           = 1;
 $config['poller_modules']['mib']                          = 0;
+```
+
+#### OS based Poller config
+
+You can enable or disable modules for a specific OS by add corresponding line in `includes/definitions/$os.yaml`
+OS based settings have preference over global. Device based settings have preference over all others
+
+Poller performance improvement can be achieved by deactivating all modules that are not supported by specific OS.
+
+E.g. to deactivate spanning tree but activate unix-agent module for linux OS
+
+```php
+$config['os']['linux']['poller_modules']['stp']  = 0;
+$config['os']['linux']['poller_modules']['unix-agent'] = 1;
 ```
 
 #### Poller modules
@@ -169,8 +187,7 @@ Multiple Modules
 ./poller.php -h localhost -m ports,entity-physical -d
 ```
 
-It is then advisable to sanitise the output before pasting it somewhere as the debug output will contain snmp details
-amongst other items including port descriptions.
+Using `-d` shouldn't output much sensitive information, `-v` will so it is then advisable to sanitise the output before pasting it somewhere as the debug output will contain snmp details amongst other items including port descriptions.
 
 The output will contain:
 

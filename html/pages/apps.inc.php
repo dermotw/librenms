@@ -66,6 +66,21 @@ $graphs['powerdns'] = array(
     'queries_udp',
 );
 
+$graphs['ntp-client'] = array(
+    'stats',
+    'freq',
+);
+
+$graphs['ntp-server'] = array(
+    'stats',
+    'freq',
+    'stratum',
+    'buffer',
+    'bits',
+    'packets',
+    'uptime',
+);
+
 $graphs['nfs-v3-stats'] = array(
     'stats',
     'io',
@@ -79,8 +94,42 @@ $graphs['nfs-v3-stats'] = array(
 $graphs['os-updates'] = array(
     'packages',
 );
+
 $graphs['dhcp-stats'] = array(
      'stats',
+);
+
+$graphs['freeswitch'] = array(
+    'peak',
+    'callsIn',
+    'callsOut',
+);
+
+$graphs['ups-nut'] = array(
+    'remaining',
+    'load',
+    'voltage_battery',
+    'charge',
+    'voltage_input',
+);
+
+$graphs['ups-apcups'] = array(
+    'remaining',
+    'load',
+    'voltage_battery',
+    'charge',
+    'voltage_input',
+);
+
+$graphs['gpsd'] = array(
+    'satellites',
+    'dop',
+    'mode',
+);
+
+$graphs['exim-stats'] = array(
+    'frozen',
+    'queue'
 );
 
 print_optionbar_start();
@@ -98,12 +147,8 @@ $link_array = array(
 foreach ($app_list as $app) {
     echo $sep;
 
-    // if (!$vars['app']) { $vars['app'] = $app['app_type']; }
     if ($vars['app'] == $app['app_type']) {
         echo "<span class='pagemenu-selected'>";
-        // echo('<img src="images/icons/'.$app['app_type'].'.png" class="optionicon" />');
-    } else {
-        // echo('<img src="images/icons/greyscale/'.$app['app_type'].'.png" class="optionicon" />');
     }
 
     echo generate_link(nicecase($app['app_type']), array('page' => 'apps', 'app' => $app['app_type']));

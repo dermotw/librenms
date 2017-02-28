@@ -1,3 +1,4 @@
+source: Support/FAQ.md
 ### Getting started
  - [How do I install LibreNMS?](#faq1)
  - [How do I add a device?](#faq2)
@@ -18,6 +19,12 @@
  - [My device doesn't finish polling within 300 seconds](#faq19)
  - [Things aren't working correctly?](#faq18)
  - [What do the values mean in my graphs?](#faq21)
+ - [Why does a device show as a warning?](#faq22)
+ - [Why do I not see all interfaces in the Overall traffic graph for a device?](#faq23)
+ - [How do I move my LibreNMS install to another server?](#faq24)
+ - [Why is my EdgeRouter device not detected?](#faq25)
+ - [Why are some of my disks not showing?](#faq26)
+ - [Why are my disks reporting an incorrect size?](#faq27)
 
 ### Developing
  - [How do I add support for a new OS?](#faq8)
@@ -41,13 +48,15 @@ You have two options for adding a new device into LibreNMS.
 ./addhost.php [community] [v1|v2c] [port] [udp|udp6|tcp|tcp6]
 ```
 
+> Please note that if the community contains special characters such as `$` then you will need to wrap it in `'`. I.e: `'Pa$$w0rd'`.
+
  2. Using the web interface, go to Devices and then Add Device. Enter the details required for the device that you want to add and then click 'Add Host'.
 
 #### <a name="faq3"> How do I get help?</a>
 
 We have a few methods for you to get in touch to ask for help.
 
-[Mailing List](https://groups.google.com/forum/#!forum/librenms-project)
+[Community Forum](https://community.librenms.org)
 
 [IRC](https://webchat.freenode.net/) Freenode ##librenms
 
@@ -142,7 +151,7 @@ Re-run `./validate.php` once you've resolved any issues raised.
 
 You have an odd issue - we'd suggest you join our irc channel to discuss.
 
-#### <a name="faq22"> What do the values mean in my graphs?</a>
+#### <a name="faq21"> What do the values mean in my graphs?</a>
 
 The values you see are reported as metric values. Thanks to a post on [Reddit](https://www.reddit.com/r/networking/comments/4xzpfj/rrd_graph_interface_error_label_what_is_the_m/) 
 here are those values:
@@ -162,32 +171,98 @@ here are those values:
 10^15   P - peta
 ```
 
+#### <a name="faq22"> Why does a device show as a warning?</a>
+
+This is indicating that the device has rebooted within the last 24 hours (by default). If you want to adjust this 
+threshold then you can do so by setting `$config['uptime_warning']` in config.php. The value must be in seconds.
+
+#### <a name="faq23"> Why do I not see all interfaces in the Overall traffic graph for a device?</a>
+
+By default numerous interface types and interface descriptions are excluded from this graph. The excluded defailts are:
+
+```php
+$config['device_traffic_iftype'][] = '/loopback/';
+$config['device_traffic_iftype'][] = '/tunnel/';
+$config['device_traffic_iftype'][] = '/virtual/';
+$config['device_traffic_iftype'][] = '/mpls/';
+$config['device_traffic_iftype'][] = '/ieee8023adLag/';
+$config['device_traffic_iftype'][] = '/l2vlan/';
+$config['device_traffic_iftype'][] = '/ppp/';
+
+$config['device_traffic_descr'][] = '/loopback/';
+$config['device_traffic_descr'][] = '/vlan/';
+$config['device_traffic_descr'][] = '/tunnel/';
+$config['device_traffic_descr'][] = '/bond/';
+$config['device_traffic_descr'][] = '/null/';
+$config['device_traffic_descr'][] = '/dummy/';
+```
+
+If you would like to re-include l2vlan interfaces for instance, you first need to `unset` the config array and set your options:
+
+```php
+unset($config['device_traffic_iftype']);
+$config['device_traffic_iftype'][] = '/loopback/';
+$config['device_traffic_iftype'][] = '/tunnel/';
+$config['device_traffic_iftype'][] = '/virtual/';
+$config['device_traffic_iftype'][] = '/mpls/';
+$config['device_traffic_iftype'][] = '/ieee8023adLag/';
+$config['device_traffic_iftype'][] = '/ppp/';
+```
+#### <a name="faq24"> How do I move my LibreNMS install to another server?</a>
+
+If you are moving from one CPU architecture to another then you will need to dump the rrd files and re-create them. If you are in 		
+this scenario then you can use [Dan Brown's migration scripts](https://vlan50.com/2015/04/17/migrating-from-observium-to-librenms/).		
+		
+If you are just moving to another server with the same CPU architecture then the following steps should be all that's needed:		
+		
+    - Install LibreNMS as per our normal documentation, you don't need to run through the web installer or building the sql schema.		
+    - Stop cron by commenting out all lines in `/etc/cron.d/librenms`
+    - Dump the MySQL database `librenms` and import this into your new server.
+    - Copy the `rrd/` folder to the new server.
+    - Copy the `config.php` file to the new server.
+    - Renable cron by uncommenting all lines in `/etc/cron.d/librenms`
+
+#### <a name="faq25"> Why is my EdgeRouter device not detected?</a>
+
+If you have `service snmp description` set in your config then this will be why, please remove this. For some reason Ubnt have decided setting this 
+ value should override the sysDescr value returned which breaks our detection.
+ 
+If you don't have that set then this may be then due to an update of EdgeOS or a new device type, please [create an issue](https://github.com/librenms/librenms/issues/new).
+
+#### <a name="faq26"> Why are some of my disks not showing?</a>
+
+If you are monitoring a linux server then net-snmp doesn't always expose all disks via hrStorage (HOST-RESOURCES-MIB). We have additional support which will retrieve disks via dskTable (UCD-SNMP-MIB). 
+To expose these disks you need to add additional config to your snmpd.conf file. For example, to expose `/dev/sda1` which may be mounted as `/storage` you can specify:
+
+`disk /dev/sda1`
+
+Or
+
+`disk /storage`
+
+Restart snmpd and LibreNMS should populate the additional disk after a fresh discovery.
+
+#### <a name="faq27"> Why are my disks reporting an incorrect size?</a>
+There is a known issue for net-snmp, which causes it to report incorrect disk size and disk usage when the size of the disk (or raid) are larger then 16TB, a workaround has been implemented but is not active on Centos 6.8 by default due to the fact that this workaround breaks official SNMP specs, and as such could cause unexpected behaviour in other SNMP tools. You can activate the workaround by adding to /etc/snmp/snmpd.conf :
+
+`realStorageUnits 0`
+
 #### <a name="faq8"> How do I add support for a new OS?</a>
 
-The easiest way to show you how to do that is to link to an existing pull request that has been merged in on [GitHub](https://github.com/librenms/librenms/pull/352/files)
-
-To go into a bit more detail, the following are usually needed:
-
-**includes/definitions.inc.php**
-Update this file to include the required definitions for the new OS.
-**includes/discovery/os/ciscowlc.inc.php**
-This file just sets the $os variable, done by checking the SNMP tree for a particular value that matches the OS you are adding.  Typically, this will come from the presence of specific values in
-sysObjectID or sysDescr, or the existence of a particular enterprise tree.
-**includes/polling/os/ciscowlc.inc.php**
-This file will usually set the variables for $version and $hardware gained from an snmp lookup.
-**html/images/os/$os.png**
-This is a 32x32 png format image of the OS you are adding support for.
+Please see [Supporting a new OS](../Developing/Support-New-OS.md)
 
 #### <a name="faq20"> What information do you need to add a new OS?</a>
 
-Please provide the following output as seperate non-expiring pastebin.com links.
+Under the device, click the gear and select Capture. 
+Please provide the output of Discovery, Poller, and Snmpwalk as separate non-expiring pastebin.com links.
 
-Replace the relevant information in these commands such as HOSTNAME and COMMUNITY.
+You can also use the command line to obtain the information.  Especially, if snmpwalk results in a large amount of data.
+Replace the relevant information in these commands such as HOSTNAME and COMMUNITY. Use `snmpwalk` instead of `snmpbulkwalk` for v1 devices.
 
 ```bash
-./discovery.php -h HOSTNAME -d -m os
-./poller.php -h HOSTNAME -r -f -d -m os
-snmpbulkwalk -On -v2c -c COMMUNITY HOSTNAME .
+./discovery.php -h HOSTNAME -d
+./poller.php -h HOSTNAME -r -f -d
+snmpbulkwalk -OUneb -v2c -c COMMUNITY HOSTNAME .
 ```
 
 If possible please also provide what the OS name should be if it doesn't exist already.

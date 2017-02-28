@@ -1,3 +1,4 @@
+source: Extensions/Alerting.md
 Table of Content:
 
 - [About](#about)
@@ -24,6 +25,8 @@ Table of Content:
     - [PlaySMS](#transports-playsms)
     - [VictorOps](#transports-victorops)
     - [Canopsis](#transports-canopsis)
+    - [osTicket](#transports-osticket)
+    - [Microsoft Teams](#transports-msteams)
 - [Entities](#entities)
     - [Devices](#entity-devices)
     - [BGP Peers](#entity-bgppeers)
@@ -65,8 +68,8 @@ __Conditions__ can be any of:
 
 - Equals `=`
 - Not Equals `!=`
-- Matches `~`
-- Not Matches `!~`
+- Like `~`
+- Not Like `!~`
 - Greater `>`
 - Greater or Equal `>=`
 - Smaller `<`
@@ -75,7 +78,7 @@ __Conditions__ can be any of:
 __Values__ can be Entities or any single-quoted data.
 __Glues__ can be either `&&` for `AND` or `||` for `OR`.
 
-__Note__: The difference between `Equals` and `Matches` (and its negation) is that `Equals` does a strict comparison and `Matches` allows the usage of RegExp.
+__Note__: The difference between `Equals` and `Like` (and its negation) is that `Equals` does a strict comparison and `Like` allows the usage of RegExp.
 Arithmetics are allowed as well.
 
 ## <a name="rules-examples">Examples</a>
@@ -116,6 +119,11 @@ Placeholders:
 - Hostname of the Device: `%hostname`
 - sysName of the Device: `%sysName`
 - location of the Device: `%location`
+- uptime of the Device (in seconds): `%uptime`
+- short uptime of the Device (28d 22h 30m 7s): `%uptime_short`
+- long uptime of the Device (28 days, 22h 30m 7s): `%uptime_long`
+- description (purpose db field) of the Device: `%description`
+- notes of the Device: `%notes`
 - Title for the Alert: `%title`
 - Time Elapsed, Only available on recovery (`%state == 0`): `%elapsed`
 - Alert-ID: `%id`
@@ -128,6 +136,20 @@ Placeholders:
 - Timestamp: `%timestamp`
 - Transport name: `%transport`
 - Contacts, must be iterated in a foreach, `%key` holds email and `%value` holds name: `%contacts`
+
+Placeholders can be used within the subjects for templates as well although %faults is most likely going to be worthless.
+
+> NOTE: Placeholder names which are contained within another need to be ordered correctly. As an example:
+
+```text
+Limit: %value.sensor_limit / %value.sensor_limit_low
+```
+
+Should be done as:
+
+```text
+Limit: %value.sensor_limit_low / %value.sensor_limit
+```
 
 The Default Template is a 'one-size-fit-all'. We highly recommend defining own templates for your rules to include more specific information.
 Templates can be matched against several rules.
@@ -175,18 +197,17 @@ By default the Contacts will be only gathered when the alert triggers and will i
 The contacts will always include the `SysContact` defined in the Device's SNMP configuration and also every LibreNMS-User that has at least `read`-permissions on the entity that is to be alerted.
 At the moment LibreNMS only supports Port or Device permissions.
 You can exclude the `SysContact` by setting:
-~~
+
 ```php
 $config['alert']['syscontact'] = false;
 ```
-~
+
 To include users that have `Global-Read` or `Administrator` permissions it is required to add these additions to the `config.php` respectively:
-~
+
 ```php
 $config['alert']['globals'] = true; //Include Global-Read into alert-contacts
 $config['alert']['admins']  = true; //Include Administrators into alert-contacts
 ```
-~~
 
 ## <a name="transports-email">E-Mail</a>
 
@@ -273,7 +294,9 @@ $config['alert']['transports']['irc'] = true;
 
 > You can configure these options within the WebUI now, please avoid setting these options within config.php
 
-The Slack transport will POST the alert message to your Slack Incoming WebHook using the [attachments](https://api.slack.com/docs/message-attachments) option, you are able to specify multiple webhooks along with the relevant options to go with it. Simple html tags are stripped from the message. All options are optional, the only required value is for url, without this then no call to Slack will be made. Below is an example of how to send alerts to two channels with different customised options:
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
+The Slack transport will POST the alert message to your Slack Incoming WebHook using the [attachments](https://api.slack.com/docs/message-attachments) option, you are able to specify multiple webhooks along with the relevant options to go with it. Simple html tags are stripped from the message. All options are optional, the only required value is for url, without this then no call to Slack will be made. Below is an example of how to send alerts to two channels with different customised options: 
 
 ~~
 ```php
@@ -287,6 +310,8 @@ $config['alert']['transports']['slack'][] = array('url' => "https://hooks.slack.
 ## <a name="transports-hipchat">HipChat</a>
 
 > You can configure these options within the WebUI now, please avoid setting these options within config.php
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
 
 The HipChat transport requires the following:
 
@@ -337,6 +362,8 @@ $config['alert']['transports']['hipchat'][] = array("url" => "https://api.hipcha
 
 > You can configure these options within the WebUI now, please avoid setting these options within config.php
 
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
 Enabling PagerDuty transports is almost as easy as enabling email-transports.
 
 All you need is to create a Service with type Generic API on your PagerDuty dashboard.
@@ -354,6 +381,8 @@ That's it!
 __Note__: Currently ACK notifications are not transported to PagerDuty, This is going to be fixed within the next major version (version by date of writing: 2015.05)
 
 ## <a name="transports-pushover">Pushover</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
 
 Enabling Pushover support is fairly easy, there are only two required parameters.
 
@@ -384,6 +413,8 @@ $config['alert']['transports']['pushover'][] = array(
 
 ## <a name="transports-boxcar">Boxcar</a>
 
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
 Enabling Boxcar support is super easy.
 Copy your access token from the Boxcar app or from the Boxcar.io website and setup the transport in your config.php like:
 
@@ -408,6 +439,8 @@ $config['alert']['transports']['boxcar'][] = array(
 
 ## <a name="transports-pushbullet">Pushbullet</a>
 
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
 Enabling Pushbullet is a piece of cake.
 Get your Access Token from your Pushbullet's settings page and set it in your config like:
 
@@ -418,6 +451,8 @@ $config['alert']['transports']['pushbullet'] = 'MYFANCYACCESSTOKEN';
 ~~
 
 ## <a name="transports-clickatell">Clickatell</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
 
 Clickatell provides a REST-API requiring an Authorization-Token and at least one Cellphone number.
 Please consult Clickatell's documentation regarding number formatting.
@@ -433,6 +468,8 @@ $config['alert']['transports']['clickatell']['to'][]  = '+1234567892';
 ~~
 
 ## <a name="transports-playsms">PlaySMS</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
 
 PlaySMS is an open source SMS-Gateway that can be used via their HTTP-API using a Username and WebService-Token.
 Please consult PlaySMS's documentation regarding number formatting.
@@ -450,6 +487,8 @@ $config['alert']['transports']['playsms']['to'][]  = '+1234567891';
 ~~
 
 ## <a name="transports-victorops">VictorOps</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
 
 VictorOps provide a webHook url to make integration extremely simple. To get the URL required login to your VictorOps account and go to:
 
@@ -486,6 +525,39 @@ $config['alert']['transports']['canopsis']['vhost'] = 'canopsis';
 For more information about canopsis and its events, take a look here :
  http://www.canopsis.org/
  http://www.canopsis.org/wp-content/themes/canopsis/doc/sakura/user-guide/event-spec.html
+
+## <a name="transports-osticket">osTicket</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
+osTicket, open source ticket system. LibreNMS can send alerts to osTicket API which are then converted to osTicket tickets. To configure the transport, go to:
+
+Global Settings -> Alerting Settings -> osTicket Transport.
+
+This can also be done manually in config.php :
+
+~~
+```php
+$config['alert']['transports']['osticket']['url'] = 'http://osticket.example.com/api/http.php/tickets.json';
+$config['alert']['transports']['osticket']['token'] = '123456789';
+```
+~~
+
+## <a name="transports-msteams">Microsoft Teams</a>
+
+[Using a proxy?](../Support/Configuration.md#proxy-support)
+
+Microsoft Teams. LibreNMS can send alerts to Microsoft Teams Connector API which are then posted to a specific channel. To configure the transport, go to:
+
+Global Settings -> Alerting Settings -> Microsoft Teams Transport.
+
+This can also be done manually in config.php :
+
+~
+```php
+$config['alert']['transports']['msteams']['url'] = 'https://outlook.office365.com/webhook/123456789';
+```
+~
 
 # <a name="entities">Entities
 

@@ -16,7 +16,7 @@ if ($device['os'] == 'junos' || $device['os_group'] == 'junos') {
     $multiplier = 1;
     $divisor    = 1000000;
     foreach ($junos_oids as $index => $entry) {
-        if (is_numeric($entry['jnxDomCurrentTxLaserBiasCurrent'])) {
+        if (is_numeric($entry['jnxDomCurrentTxLaserBiasCurrent']) && $entry['jnxDomCurrentTxLaserBiasCurrent'] != 0 && $entry['jnxDomCurrentTxLaserBiasCurrentLowAlarmThreshold'] != 0) {
             $oid = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.6.'.$index;
             $descr = dbFetchCell('SELECT `ifDescr` FROM `ports` WHERE `ifIndex`= ? AND `device_id` = ?', array($index, $device['device_id'])) . ' Rx Current';
             $limit_low = $entry['jnxDomCurrentTxLaserBiasCurrentLowAlarmThreshold']/$divisor;
@@ -28,7 +28,5 @@ if ($device['os'] == 'junos' || $device['os_group'] == 'junos') {
             $entPhysicalIndex_measured = 'ports';
             discover_sensor($valid['sensor'], 'current', $device, $oid, 'rx-'.$index, 'junos', $descr, $divisor, $multiplier, $limit_low, $warn_limit_low, $warn_limit, $limit, $current, 'snmp', $entPhysicalIndex, $entPhysicalIndex_measured);
         }
-
     }
-
 }

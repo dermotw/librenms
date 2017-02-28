@@ -6,6 +6,8 @@
 !/.travis.yml
 !/.php_cs
 !/.github/
+!/.codeclimate.yml
+!/.mention-bot
 
 # Others #
 ##########
@@ -13,11 +15,18 @@
 /composer.lock
 Thumbs.db
 config.php
+html/css/custom/*
 html/plugins/*
 !html/plugins/Test/
+includes/custom/*
 junk
 logs
 nbproject
 patches
 rrd
+!/lib/yaml
 /vendor
+composer.phar
+librenms_theme
+rename_script
+rename_script.sh

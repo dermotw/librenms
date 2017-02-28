@@ -1,15 +1,12 @@
 <?php
 
-require_once '../includes/defaults.inc.php';
+$init_modules = array('web', 'auth');
+require realpath(__DIR__ . '/..') . '/includes/init.php';
+
 set_debug($_REQUEST['debug']);
-require_once '../config.php';
-require_once '../includes/definitions.inc.php';
-require_once 'includes/functions.inc.php';
-require_once '../includes/functions.php';
-require_once 'includes/authenticate.inc.php';
 
 if (!$_SESSION['authenticated']) {
-    echo 'unauthenticated';
+    echo "Unauthenticated\n";
     exit;
 }
 
@@ -47,7 +44,7 @@ if (isset($_REQUEST['search'])) {
         } elseif ($_REQUEST['type'] == 'device') {
             // Device search
             if (is_admin() === true || is_read() === true) {
-                $results = dbFetchRows("SELECT * FROM `devices` WHERE `hostname` LIKE '%".$search."%' OR `location` LIKE '%".$search."%' OR `sysName` LIKE '%".$search."%' ORDER BY hostname LIMIT ".$limit);
+                $results = dbFetchRows("SELECT * FROM `devices` WHERE `hostname` LIKE '%".$search."%' OR `location` LIKE '%".$search."%' OR `sysName` LIKE '%".$search."%' OR `purpose` LIKE '%".$search."%' OR `notes` LIKE '%".$search."%' ORDER BY hostname LIMIT ".$limit);
             } else {
                 $results = dbFetchRows("SELECT * FROM `devices` AS `D`, `devices_perms` AS `P` WHERE `P`.`user_id` = ? AND `P`.`device_id` = `D`.`device_id` AND (`hostname` LIKE '%".$search."%' OR `location` LIKE '%".$search."%') ORDER BY hostname LIMIT ".$limit, array($_SESSION['user_id']));
             }
@@ -58,7 +55,7 @@ if (isset($_REQUEST['search'])) {
 
                 foreach ($results as $result) {
                     $name = $result['hostname'];
-                    if ($result['sysName'] != $name && !empty($result['sysName'])) {
+                    if ($_REQUEST['map'] != 1 && $result['sysName'] != $name && !empty($result['sysName'])) {
                         $name .= ' ('.$result['sysName'].') ';
                     }
                     if ($result['disabled'] == 1) {
@@ -83,7 +80,7 @@ if (isset($_REQUEST['search'])) {
                         'url'             => generate_device_url($result),
                         'colours'         => $highlight_colour,
                         'device_ports'    => $num_ports,
-                        'device_image'    => getImageSrc($result),
+                        'device_image'    => getIcon($result),
                         'device_hardware' => $result['hardware'],
                         'device_os'       => $config['os'][$result['os']]['text'],
                         'version'         => $result['version'],
@@ -107,7 +104,7 @@ if (isset($_REQUEST['search'])) {
 
                 foreach ($results as $result) {
                     $name        = $result['ifDescr'] == $result['ifAlias'] ? $result['ifName'] : $result['ifDescr'];
-                    $description = $result['ifAlias'];
+                    $description = display($result['ifAlias']);
 
                     if ($result['deleted'] == 0 && ($result['ignore'] == 0 || $result['ignore'] == 0) && ($result['ifInErrors_delta'] > 0 || $result['ifOutErrors_delta'] > 0)) {
                         // Errored ports
@@ -169,9 +166,9 @@ if (isset($_REQUEST['search'])) {
                     }
 
                     if ($result['bgpPeerRemoteAs'] == $result['bgpLocalAs']) {
-                        $bgp_image = 'images/16/brick_link.png';
+                        $bgp_image = '<i class="fa fa-square fa-lg icon-theme" aria-hidden="true"></i>';
                     } else {
-                        $bgp_image = 'images/16/world_link.png';
+                        $bgp_image = '<i class="fa fa-external-link-square fa-lg icon-theme" aria-hidden="true"></i>';
                     }
 
                     $bgp[] = array(
@@ -220,7 +217,7 @@ if (isset($_REQUEST['search'])) {
                         'app_id'          => $result['app_id'],
                         'device_id'       => $result['device_id'],
                         'colours'         => $highlight_colour,
-                        'device_image'    => getImageSrc($result),
+                        'device_image'    => getIcon($result),
                         'device_hardware' => $result['hardware'],
                         'device_os'       => $config['os'][$result['os']]['text'],
                         'version'         => $result['version'],
@@ -260,7 +257,7 @@ if (isset($_REQUEST['search'])) {
                         'hostname'        => $result['hostname'],
                         'device_id'       => $result['device_id'],
                         'colours'         => $highlight_colour,
-                        'device_image'    => getImageSrc($result),
+                        'device_image'    => getIcon($result),
                         'device_hardware' => $result['hardware'],
                         'device_os'       => $config['os'][$result['os']]['text'],
                         'version'         => $result['version'],

@@ -50,18 +50,18 @@ echo '  <tr>
 
 echo '<td>';
 if ($port_count) {
-    echo ' <img src="images/icons/port.png" align=absmiddle /> '.$port_count;
+    echo ' <i class="fa fa-link fa-lg icon-theme" aria-hidden="true"></i> '.$port_count;
 }
 
 echo '<br />';
 if ($sensor_count) {
-    echo ' <img src="images/icons/sensors.png" align=absmiddle /> '.$sensor_count;
+    echo ' <i class="fa fa-tachometer fa-lg icon-theme" aria-hidden="true"></i> '.$sensor_count;
 }
 
 echo '</td>';
 echo '    <td>'.$device['hardware'].' '.$device['features'].'</td>';
 echo '    <td>'.formatUptime($device['uptime'], 'short').' <br />';
 
-echo '    '.truncate($device['location'], 32, '').'</td>';
+echo '    '.substr($device['location'], 0, 32).'</td>';
 
 echo ' </tr>';

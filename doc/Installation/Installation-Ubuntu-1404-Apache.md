@@ -1,3 +1,4 @@
+source: Installation/Installation-Ubuntu-1404-Apache.md
 
 > NOTE: These instructions have been tested on a fresh install of Ubuntu 12.04 and 14.04.
 
@@ -204,6 +205,12 @@ LibreNMS uses Job Snijders' [poller-wrapper.py][1].  By default, the cron job ru
 Create the cronjob
 
     cp librenms.nonroot.cron /etc/cron.d/librenms
+
+### Copy logrotate config ###
+
+LibreNMS keeps logs in `/opt/librenms/logs`. Over time these can become large and be rotated out.  To rotate out the old logs you can use the provided logrotate config file:
+
+    cp misc/librenms.logrotate /etc/logrotate.d/librenms
 
 ### Daily Updates ###
 

@@ -99,7 +99,7 @@ if ($data) {
 
         foreach ($oids as $oid) {
             $oid_ds      = str_replace('ipSystemStats', '', $oid);
-            $oid_ds      = truncate($oid_ds, 19, '');
+            $oid_ds      = substr($oid_ds, 0, 19);
             $rrd_def[]   = "DS:$oid_ds:COUNTER:600:U:100000000000";
             if (strstr($stats[$oid], 'No') || strstr($stats[$oid], 'd') || strstr($stats[$oid], 's')) {
                 $stats[$oid] = '0';
@@ -108,7 +108,7 @@ if ($data) {
         }
 
         $tags = compact('af', 'rrd_name', 'rrd_def');
-        data_update($device,'ipSystemStats',$tags,$fields);
+        data_update($device, 'ipSystemStats', $tags, $fields);
 
         // FIXME per-AF?
         $graphs['ipsystemstats_'.$af]         = true;
