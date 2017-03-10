@@ -891,40 +891,50 @@ function avtech_add_sensor($device, $sensor)
     return true;
 }
 
+
 /**
- * @param $device
- * @param $serial
- * @param $sensor
+ * Get the device divisor, account for device specific quirks
+ * The default divisor is 10
+ *
+ * @param array $device device array
+ * @param string $os_version firmware version poweralert quirks
+ * @param string $sensor_type the type of this sensor
+ * @param string $oid the OID of this sensor
  * @return int
  */
-function get_device_divisor($device, $serial, $sensor)
+function get_device_divisor($device, $os_version, $sensor_type, $oid)
 {
     if ($device['os'] == 'poweralert') {
-        if ($sensor == 'current' || $sensor == 'frequencies') {
-            if (version_compare($serial, '12.06.0068', '>=')) {
-                $divisor = 10;
-            } elseif (version_compare($serial, '12.04.0055', '=')) {
-                $divisor = 10;
-            } elseif (version_compare($serial, '12.04.0056', '>=')) {
-                $divisor = 1;
+        if ($sensor_type == 'current' || $sensor_type == 'frequencies') {
+            if (version_compare($os_version, '12.06.0068', '>=')) {
+                return 10;
+            } elseif (version_compare($os_version, '12.04.0055', '=')) {
+                return 10;
+            } elseif (version_compare($os_version, '12.04.0056', '>=')) {
+                return 1;
             }
-        } elseif ($sensor == 'load') {
-            if (version_compare($serial, '12.06.0064', '=')) {
-                $divisor = 10;
+        } elseif ($sensor_type == 'load') {
+            if (version_compare($os_version, '12.06.0064', '=')) {
+                return 10;
             } else {
-                $divisor = 1;
+                return 1;
             }
-        } elseif ($sensor == 'voltages') {
-            $divisor = 1;
+        } elseif ($sensor_type == 'voltages') {
+            return 1;
         }
-    } elseif (($device['os'] == 'huaweiups') && ($sensor == 'frequencies')) {
-        $divisor = 100;
-    } elseif (($device['os'] == 'netmanplus') && ($sensor == 'voltages')) {
-        $divisor = 1;
-    } else {
-        $divisor = 10;
+    } elseif (($device['os'] == 'huaweiups') && ($sensor_type == 'frequencies')) {
+        return 100;
+    } elseif (($device['os'] == 'netmanplus') && ($sensor_type == 'voltages')) {
+        return 1;
+    } elseif ($device['os'] == 'generex-ups') {
+        if ($sensor_type == 'load') {
+            return 1;
+        } elseif ($sensor_type == 'voltages' && !starts_with($oid, '.1.3.6.1.2.1.33.1.2.5.')) {
+            return 1;
+        }
     }
-    return $divisor;
+
+    return 10; //default
 }
 
 /**
@@ -980,24 +990,23 @@ function ignore_storage($descr)
 function sensors($types, $device, $valid, $pre_cache = array())
 {
     global $config;
-    foreach ((array)$types as $type) {
-        echo ucfirst($type) . ': ';
-
-        $dir = $config['install_dir'] . '/includes/discovery/sensors/' . $type .'/';
+    foreach ((array)$types as $sensor_type) {
+        echo ucfirst($sensor_type) . ': ';
+        $dir = $config['install_dir'] . '/includes/discovery/sensors/' . $sensor_type .'/';
 
         if (is_file($dir . $device['os_group'] . '.inc.php')) {
-            include_once $dir . $device['os_group'] . '.inc.php';
+            include $dir . $device['os_group'] . '.inc.php';
         }
         if (is_file($dir . $device['os'] . '.inc.php')) {
-            include_once $dir . $device['os'] . '.inc.php';
+            include $dir . $device['os'] . '.inc.php';
         }
         if (isset($config['modules_compat']['rfc1628'][$device['os']]) && $config['modules_compat']['rfc1628'][$device['os']]) {
             if (is_file($dir  . '/rfc1628.inc.php')) {
-                include_once $dir . '/rfc1628.inc.php';
+                include $dir . '/rfc1628.inc.php';
             }
         }
-        d_echo($valid['sensor'][$type]);
-        check_valid_sensors($device, $type, $valid['sensor']);
+        d_echo($valid['sensor'][$sensor_type]);
+        check_valid_sensors($device, $sensor_type, $valid['sensor']);
         echo "\n";
     }
 }
