@@ -596,6 +596,11 @@ $config['graph_types']['device']['riverbed_passthrough']['section'] = 'network';
 $config['graph_types']['device']['riverbed_passthrough']['order'] = 3;
 $config['graph_types']['device']['riverbed_passthrough']['descr'] = 'Bandwidth Passthrough';
 
+// Eltek
+$config['graph_types']['device']['eltek_voltage']['section']	= 'power';
+$config['graph_types']['device']['eltek_voltage']['order']	= 0;
+$config['graph_types']['device']['eltek_voltage']['descr']	= 'Voltage';
+
 // Device Types
 $i = 0;
 $config['device_types'][$i]['text'] = 'Servers';
