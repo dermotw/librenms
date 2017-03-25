@@ -1,0 +1,6 @@
+os: eltek
+text: Eltek Rectifier
+type: power
+icon: eltek
+over:
+   - { graph: voltage, text "Traffic" }

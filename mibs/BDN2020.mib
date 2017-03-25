@@ -1,0 +1,1344 @@
+	BDN2020-MIB
+	
+--	FORCE-INCLUDE <stdio.h>
+--	FORCE-INCLUDE <types.h>
+	
+--	FORCE-INCLUDE <wrn/wm/snmp/engine/asn1.h>
+--	FORCE-INCLUDE <wrn/wm/snmp/engine/mib.h>
+--	FORCE-INCLUDE <wrn/wm/snmp/engine/snmpdefs.h>
+--	FORCE-INCLUDE <wrn/wm/snmp/engine/snmp.h>	
+
+   DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE,
+       Unsigned32, Gauge32, enterprises
+             FROM SNMPv2-SMI                -- [RFC2578]
+       DisplayString, TruthValue
+             FROM SNMPv2-TC                 -- [RFC2579]
+       MODULE-COMPLIANCE, OBJECT-GROUP
+             FROM SNMPv2-CONF               -- [RFC2580]
+       PerfCurrentCount, PerfIntervalCount
+             FROM PerfHist-TC-MIB;          -- [RFC3593]
+
+   --  This is the MIB module for the BDN2020 Private MIB objects.
+
+   dialogic MODULE-IDENTITY
+           LAST-UPDATED "201202150000Z"
+	       ORGANIZATION ""
+	       CONTACT-INFO ""       
+	       DESCRIPTION  ""
+              
+       ::= { enterprises 3028 } 
+
+products            OBJECT IDENTIFIER ::= { dialogic 6 }
+gateway-products    OBJECT IDENTIFIER ::= { products 1 }
+
+bdn2020 	  		OBJECT IDENTIFIER ::= { gateway-products 7 }
+
+statistics 	  		OBJECT IDENTIFIER ::= { bdn2020 1 }
+
+activeAlarms	    OBJECT IDENTIFIER ::= { bdn2020 2 }
+
+
+-- *******************
+-- CPU Info Statistics:
+-- *******************
+cpuInfoStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF CPUInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { statistics 1 }
+
+cpuInfoEntry OBJECT-TYPE
+       SYNTAX  CPUInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+	    INDEX   { cpuInfoIndex }
+	    
+--DEFAULT get-function-async  cpuInfoGet
+--DEFAULT next-function-async cpuInfoNext
+--DEFAULT set-function-async  cpuInfoSet  
+        ::= { cpuInfoStatistics 1 }
+
+CPUInfoEntry ::=
+    SEQUENCE {
+         cpuInfoIndex    			Unsigned32, 
+         timeOfDay1					DisplayString,
+         refreshRate1 				Unsigned32,    
+         cpuBusy        			Unsigned32,    
+	 		freeMemory     			Gauge32
+    }
+    
+        
+cpuInfoIndex OBJECT-TYPE
+     SYNTAX  Unsigned32
+     MAX-ACCESS read-only
+     STATUS  current
+     DESCRIPTION
+			""
+     ::= { cpuInfoEntry 1 }
+     
+timeOfDay1 OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { cpuInfoEntry 2 }
+
+refreshRate1 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { cpuInfoEntry 3 }
+    
+cpuBusy OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "    
+    ::= { cpuInfoEntry 4 }
+    
+freeMemory OBJECT-TYPE
+    SYNTAX Gauge32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { cpuInfoEntry 5 }
+
+-- *************
+-- Memory Pools:
+-- *************
+memoryPoolStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF MemoryPoolsEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { statistics 2 }
+
+memoryPoolsEntry OBJECT-TYPE
+       SYNTAX  MemoryPoolsEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          "Something"
+	    INDEX   { memPoolIndex }
+--DEFAULT get-function-async  memoryPoolsEntryGet
+--DEFAULT next-function-async memoryPoolsEntryNext
+--DEFAULT set-function-async  memoryPoolsEntrySet  
+        ::= { memoryPoolStatistics 1 }
+
+MemoryPoolsEntry ::=
+    SEQUENCE {
+         memPoolIndex    			Unsigned32, 
+         timeOfDay2					DisplayString,  
+         refreshRate2 				Unsigned32,     
+         poolSize        			Unsigned32,    
+	 		totalBuffers     			Unsigned32,
+         freeBuffers      			Unsigned32
+    }
+    
+        
+memPoolIndex OBJECT-TYPE
+     SYNTAX  Unsigned32
+     MAX-ACCESS read-only
+     STATUS  current
+     DESCRIPTION
+			""
+     ::= { memoryPoolsEntry 1 }
+
+timeOfDay2 OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { memoryPoolsEntry 2 }
+    
+refreshRate2 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { memoryPoolsEntry 3 }
+    
+poolSize OBJECT-TYPE
+     SYNTAX  Unsigned32
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { memoryPoolsEntry 4 }
+
+totalBuffers OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+    ::= { memoryPoolsEntry 5 }
+    
+freeBuffers OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+    ::= { memoryPoolsEntry 6 }
+           
+-- **********************
+-- Temperature Locations:
+-- **********************
+temperatureStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF TemperatureEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { statistics 3 }
+
+temperatureEntry OBJECT-TYPE
+       SYNTAX  TemperatureEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { tempLocationIndex }
+--DEFAULT get-function-async  temperatureEntryGet
+--DEFAULT next-function-async temperatureEntryNext
+--DEFAULT set-function-async temperatureEntrySet
+        ::= { temperatureStatistics 1 }
+
+TemperatureEntry ::=
+    SEQUENCE {
+         tempLocationIndex 		Unsigned32, 
+         timeOfDay3					DisplayString,
+         refreshRate3 				Unsigned32,    
+         tempLocationName	   	DisplayString, 
+	 		temperature      			Unsigned32
+    }        
+
+tempLocationIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+    ::= { temperatureEntry 1 } 
+    
+timeOfDay3 OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { temperatureEntry 2 }         
+
+refreshRate3 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { temperatureEntry 3 }    
+       
+tempLocationName OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { temperatureEntry 4 }  
+          
+temperature OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        ""
+    ::= { temperatureEntry 5 }
+    
+    
+channelGroupStatistics	OBJECT IDENTIFIER ::= { statistics 4 }
+
+
+-- ****************************
+--  L4 Call Control Statistics:
+-- ****************************   
+callControlStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF CallControlEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { channelGroupStatistics 1 }
+
+callControlEntry OBJECT-TYPE
+       SYNTAX  CallControlEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { callControlIndex }       
+--DEFAULT get-function-async  callCtrlEntryGet
+--DEFAULT next-function-async callCtrlEntryNext
+--DEFAULT set-function-async  callCtrlEntrySet
+        ::= { callControlStatistics 1 }
+
+CallControlEntry ::=
+    SEQUENCE {
+    		callControlIndex		Unsigned32,
+         timeOfDay4				DisplayString,   
+         refreshRate4    		Unsigned32,   		
+    		signalingType			DisplayString,
+	 		outseizeMin				Unsigned32,
+	 		outseizeMax				Unsigned32,
+	 		outseizeSamplePeriod				Unsigned32,
+	 		outseizeSamples		Unsigned32,
+	 		outseizeAckMin			Unsigned32,
+	 		outseizeAckMax			Unsigned32,
+	 		outseizeAckSamplePeriod			Unsigned32,
+	 		outseizeAckSamples	Unsigned32,
+	 		setupMin					Unsigned32,
+	 		setupMax					Unsigned32,
+	 		setupSamplePeriod					Unsigned32,
+	 		setupSamples			Unsigned32,
+	 		connectMin				Unsigned32,
+	 		connectMax				Unsigned32,
+	 		connectSamplePeriod				Unsigned32,
+	 		connectSamples			Unsigned32
+    }
+
+callControlIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 1 }
+
+
+timeOfDay4 OBJECT-TYPE
+     SYNTAX  DisplayString
+     MAX-ACCESS  read-only
+     STATUS  current
+     DESCRIPTION
+            ""
+    ::= { callControlEntry 2 }   
+    
+refreshRate4 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { callControlEntry 3 }     
+    
+signalingType OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 4 }
+        
+outseizeMin OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 5 }
+    
+outseizeMax OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 6 }    
+
+outseizeSamplePeriod OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 7 }
+    
+outseizeSamples OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 8 }   
+    
+outseizeAckMin OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 9 }
+    
+outseizeAckMax OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 10 }    
+
+outseizeAckSamplePeriod OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 11 }
+    
+outseizeAckSamples OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 12 }      
+        
+setupMin OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 13 }
+    
+setupMax OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 14 }    
+
+setupSamplePeriod OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 15 }
+    
+setupSamples OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 16 }   
+    
+connectMin OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 17 }
+    
+connectMax OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 18 }    
+
+connectSamplePeriod OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 19 }
+    
+connectSamples OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { callControlEntry 20 }       
+             
+    
+-- ***********************
+--  L4 Channel Statistics:
+-- *********************** 
+channelStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF ChannelInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       ::= { channelGroupStatistics 2 }
+
+channelInfoEntry OBJECT-TYPE
+       SYNTAX  ChannelInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+	    INDEX   { channelInfoIndex }	    
+--DEFAULT get-function-async  channelEntryGet
+--DEFAULT next-function-async channelEntryNext
+--DEFAULT set-function-async  channelEntrySet 
+        ::= { channelStatistics 1 }
+
+ChannelInfoEntry ::=
+    SEQUENCE {
+         channelInfoIndex  	Unsigned32, 
+         timeOfDay5				DisplayString, 
+         refreshRate5 		   Unsigned32,    
+         l4Answered        	Unsigned32,    
+         l4Idle		       	Unsigned32, 
+         l4OOS			        	Unsigned32,
+         l4WaitClear        	Unsigned32,
+         l4WaitOutseizeAck   	Unsigned32                      
+    }        
+        
+channelInfoIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 1 }
+            
+timeOfDay5 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION    
+        " "       
+    ::= { channelInfoEntry 2 }      
+    
+refreshRate5 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { channelInfoEntry 3 }            
+              
+l4Answered OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 4 }
+    
+l4Idle OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 5 }
+    
+l4OOS OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 6 }    
+
+l4WaitClear OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 7 }
+    
+l4WaitOutseizeAck OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { channelInfoEntry 8}    
+    
+
+-- ***************
+--  GCL Statistics:
+-- ***************    
+gclStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF GCLEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { channelGroupStatistics 3 }
+
+gclEntry OBJECT-TYPE
+       SYNTAX  GCLEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { gclIndex }       
+--DEFAULT get-function-async  gclEntryGet
+--DEFAULT next-function-async gclEntryNext
+--DEFAULT set-function-async  gclEntrySet
+        ::= { gclStatistics 1 }
+
+GCLEntry ::=
+    SEQUENCE {
+         gclIndex	        		Unsigned32,
+         timeOfDay6				DisplayString, 
+         refreshRate6			Unsigned32, 
+         groupName				DisplayString, 
+         groupID        		Unsigned32,         
+         inCalls      			Unsigned32,
+			outCalls      			Unsigned32,
+	 		inAnsCalls      		Unsigned32,         
+	 		outAnsCalls      		Unsigned32,
+	 		avgHoldCalls			Unsigned32,
+	 		totAllocChan			Unsigned32,
+	 		dialingChan				Unsigned32,
+	 		ansChan					Unsigned32,
+	 		disconChan				Unsigned32,
+	 		blockedChan				Unsigned32,
+	 		idleChan					Unsigned32,
+	 		oosChan					Unsigned32
+    }
+
+
+gclIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 1 }
+
+timeOfDay6 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 2 }   
+
+refreshRate6 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { gclEntry 3 }     
+    
+    
+groupName OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 4 }       
+
+groupID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 5 }
+    
+inCalls OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 6 }
+    
+outCalls OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 7 }    
+
+inAnsCalls OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 8 }
+    
+outAnsCalls OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 9 }    
+    
+avgHoldCalls OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 10 }
+    
+totAllocChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 11 }    
+
+dialingChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 12 }
+    
+ansChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 13 }   
+    
+disconChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 14 }
+    
+blockedChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 15 }    
+
+idleChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 16 }
+    
+oosChan OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { gclEntry 17 }      
+        
+    
+-- ***************
+-- SIP Statistics:
+-- ***************    
+sipStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF SIPInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       ::= { channelGroupStatistics 4 }
+
+sipInfoEntry OBJECT-TYPE
+       SYNTAX  SIPInfoEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+	    INDEX   { sipInfoIndex }	    
+--DEFAULT get-function-async  sipEntryGet
+--DEFAULT next-function-async sipEntryNext
+--DEFAULT set-function-async  sipEntrySet
+        ::= { sipStatistics 1 }
+
+SIPInfoEntry ::=
+    SEQUENCE {
+         sipInfoIndex  			Unsigned32, 
+         timeOfDay7				DisplayString,
+         refreshRate7			Unsigned32,     
+			invitesRcvd				Unsigned32,
+			invitesOrig 			Unsigned32,
+			byesRcvd 				Unsigned32,
+			byesOrig 				Unsigned32,
+		   cancelsRcvd 			Unsigned32,
+			cancelsOrig 			Unsigned32,
+			acksRcvd 				Unsigned32,
+			acksOrig					Unsigned32
+}
+
+sipInfoIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 1 }
+                    
+timeOfDay7 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION    
+        " "       
+    ::= { sipInfoEntry 2 }  
+
+refreshRate7 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { sipInfoEntry 3 }         
+
+invitesRcvd OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 4 }
+    
+invitesOrig OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 5 }
+    
+byesRcvd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 6 }    
+
+byesOrig OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 7 }
+    
+cancelsRcvd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 8 }  
+    
+cancelsOrig OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 9 }    
+
+acksRcvd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 10 }
+    
+acksOrig OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { sipInfoEntry 11 }    
+
+
+-- ***************
+-- SS7 Statistics:
+-- ***************    
+ss7Statistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF SS7Entry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { channelGroupStatistics 5 }
+
+ss7Entry OBJECT-TYPE
+       SYNTAX  SS7Entry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { ss7Index }       
+--DEFAULT get-function-async  ss7EntryGet
+--DEFAULT next-function-async ss7EntryNext
+--DEFAULT set-function-async  ss7EntrySet
+        ::= { ss7Statistics 1 }
+
+ SS7Entry ::=
+    SEQUENCE {
+         ss7Index		        	Unsigned32,
+         timeOfDay8				DisplayString,
+         refreshRate8			Unsigned32,  
+         stackID					Unsigned32,
+         ss7ClearReq      		Unsigned32,         
+         ss7Connect      		Unsigned32,
+	 		ss7CutThru      		Unsigned32,
+	 		ss7SetupInd        	Unsigned32,
+	 		ss7Disconnect      	Unsigned32,
+	 		ss7SccpToM3ua      	Unsigned32,
+	 		ss7SccpFromM3ua      	Unsigned32
+    }
+
+
+ss7Index OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  ss7Entry 1 }
+
+timeOfDay8 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  ss7Entry 2 }
+    
+refreshRate8 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { ss7Entry 3 }         
+
+stackID OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  ss7Entry 4 }    
+
+ss7ClearReq OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 5 }   
+  
+ss7Connect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 6 }
+    
+ss7CutThru OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 7 }    
+
+ss7SetupInd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 8 }
+
+ss7Disconnect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 9 }  
+
+ss7SccpToM3ua OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 10 }  
+
+ss7SccpFromM3ua OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { ss7Entry 11 }  
+    
+
+-- ***************
+-- ISDN Statistics:
+-- ***************    
+isdnStatistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF ISDNEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { channelGroupStatistics 6 }
+
+isdnEntry OBJECT-TYPE
+       SYNTAX  ISDNEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { isdnIndex }       
+--DEFAULT get-function-async  isdnEntryGet
+--DEFAULT next-function-async isdnEntryNext
+--DEFAULT set-function-async  isdnEntrySet
+        ::= { isdnStatistics 1 }
+
+ ISDNEntry ::=
+    SEQUENCE {
+         isdnIndex		     	Unsigned32,
+         timeOfDay9				DisplayString,
+         refreshRate9			Unsigned32,  
+         isdnClearReq     		Unsigned32,         
+         isdnConnect      		Unsigned32,
+	 isdnCutThru      			Unsigned32,
+	 isdnSetupInd        		Unsigned32,
+	 isdnDisconnect      		Unsigned32         
+    }
+
+isdnIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  isdnEntry 1 }
+
+timeOfDay9 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  isdnEntry 2 }
+    
+refreshRate9 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { isdnEntry 3 }         
+
+isdnClearReq OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { isdnEntry 4 }   
+  
+isdnConnect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { isdnEntry 5 }
+    
+isdnCutThru OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { isdnEntry 6 }    
+
+isdnSetupInd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { isdnEntry 7 }
+
+isdnDisconnect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= { isdnEntry 8 }  
+    
+    
+
+-- ***************
+-- H323 Statistics:
+-- ***************    
+h323Statistics OBJECT-TYPE
+       SYNTAX  SEQUENCE OF H323Entry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { channelGroupStatistics 7 }
+
+h323Entry OBJECT-TYPE
+       SYNTAX  H323Entry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+       INDEX   { h323Index }       
+--DEFAULT get-function-async  h323EntryGet
+--DEFAULT next-function-async h323EntryNext
+--DEFAULT set-function-async  h323EntrySet
+        ::= { h323Statistics 1 }
+
+ H323Entry ::=
+    SEQUENCE {
+         h323Index		     	Unsigned32,
+         timeOfDay10				DisplayString,
+	 		refreshRate10			Unsigned32,
+	 		h323ClearReq			Unsigned32,	 	
+	 		h323Disconnect			Unsigned32,
+	 		h323RouteControl		Unsigned32,
+	 		h323SetupInd			Unsigned32,
+	 		h323Alerting			Unsigned32,
+	 		h323Connect				Unsigned32,
+   	 	h323RouteControlAck	Unsigned32
+    }
+
+h323Index OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  h323Entry 1 }
+
+timeOfDay10 OBJECT-TYPE
+    SYNTAX DisplayString
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  h323Entry 2 }
+
+refreshRate10 OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 3 }    
+
+h323ClearReq OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "             
+    ::= { h323Entry 4 }    
+
+h323Disconnect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 5 }    
+
+h323RouteControl OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 6 }    
+
+h323SetupInd OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 7 }    
+
+h323Alerting OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "             
+    ::= { h323Entry 8 }    
+
+h323Connect OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 9 }    
+
+h323RouteControlAck OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { h323Entry 10 }          
+    
+
+-- *************
+-- activeAlarmList:
+-- *************    
+activeAlarmList OBJECT-TYPE
+       SYNTAX  SEQUENCE OF AlarmEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+        ::= { activeAlarms 1 }
+
+alarmEntry OBJECT-TYPE
+       SYNTAX  AlarmEntry
+       MAX-ACCESS  not-accessible
+       STATUS  current
+       DESCRIPTION
+          ""
+	    INDEX   { alarmIndex }
+--DEFAULT get-function-async  alarmEntryGet
+--DEFAULT next-function-async alarmEntryNext
+--DEFAULT set-function-async  alarmEntrySet  
+        ::= { activeAlarmList 1 }
+
+AlarmEntry ::=
+    SEQUENCE {
+         alarmIndex     		Unsigned32,
+         alarmTimestamp			DisplayString,
+         alarmNode				DisplayString,
+	 		alarmInstance			Unsigned32,	 	
+	 		alarmOwner				DisplayString,
+	 	   alarmSeverity			DisplayString,
+	 	   alarmState				DisplayString,
+	 		alarmDescription		DisplayString
+    }
+
+alarmIndex OBJECT-TYPE
+    SYNTAX Unsigned32
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "
+    ::= {  alarmEntry 1 }
+          
+alarmTimestamp OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { alarmEntry 2 }        
+
+alarmNode OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "             
+    ::= { alarmEntry 3 }   
+
+alarmInstance OBJECT-TYPE
+    SYNTAX Unsigned32 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "             
+    ::= { alarmEntry 4 }  
+
+alarmOwner OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { alarmEntry 5 }  
+    
+alarmSeverity OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { alarmEntry 6 }
+    
+alarmState OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { alarmEntry 7 }        
+    
+alarmDescription OBJECT-TYPE
+    SYNTAX DisplayString 
+    MAX-ACCESS read-only
+    STATUS current
+    DESCRIPTION
+        " "     
+    ::= { alarmEntry 8 }  
+
+ 
+emptyEntry		OBJECT IDENTIFIER ::= { gateway-products 8 }
+           
+END
