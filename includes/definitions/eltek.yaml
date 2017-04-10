@@ -3,4 +3,4 @@ text: Eltek Rectifier
 type: power
 icon: eltek
 over:
-   - { graph: voltage, text "Traffic" }
+   - { graph: device_eltek_voltage, text: Volts }
