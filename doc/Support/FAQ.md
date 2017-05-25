@@ -25,6 +25,7 @@ source: Support/FAQ.md
  - [Why is my EdgeRouter device not detected?](#faq25)
  - [Why are some of my disks not showing?](#faq26)
  - [Why are my disks reporting an incorrect size?](#faq27)
+ - [What is the Difference between Disable Device and Ignore a Device?](#faq28)
 
 ### Developing
  - [How do I add support for a new OS?](#faq8)
@@ -87,7 +88,7 @@ If the page you are trying to load has a substantial amount of data in it then i
 The easiest way to check if all is well is to run `./validate.php` as root from within your install directory. This should give you info on why things aren't working.
 
 One other reason could be a restricted snmpd.conf file or snmp view which limits the data sent back. If you use net-snmp then we suggest using 
-the (included snmpd.conf)[https://raw.githubusercontent.com/librenms/librenms/master/snmpd.conf.example] file.
+the [included snmpd.conf](https://raw.githubusercontent.com/librenms/librenms/master/snmpd.conf.example) file.
 
 #### <a name="faq7"> How do I debug pages not loading correctly?</a>
 
@@ -249,6 +250,11 @@ Restart snmpd and LibreNMS should populate the additional disk after a fresh dis
 There is a known issue for net-snmp, which causes it to report incorrect disk size and disk usage when the size of the disk (or raid) are larger then 16TB, a workaround has been implemented but is not active on Centos 6.8 by default due to the fact that this workaround breaks official SNMP specs, and as such could cause unexpected behaviour in other SNMP tools. You can activate the workaround by adding to /etc/snmp/snmpd.conf :
 
 `realStorageUnits 0`
+
+#### <a name="faq28"> What is the Difference between Disable Device and Ignore a Device?</a>
+
+  - Disable stops polling.
+  - Ignore disables alerting.
 
 #### <a name="faq8"> How do I add support for a new OS?</a>
 

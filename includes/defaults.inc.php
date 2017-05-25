@@ -191,6 +191,9 @@ $config['snmp']['v3'][0]['cryptoalgo'] = 'AES';
 // Devices must respond to icmp by default
 $config['icmp_check'] = true;
 
+// The amount of time to keep the OS cache
+$config['os_def_cache_time'] = 86400;
+
 // Autodiscovery Settings
 $config['autodiscovery']['xdp'] = true;
 $config['autodiscovery']['xdp_exclude']['sysdesc_regexp'][] = '/-K9W8-/'; // Cisco Lightweight Access Point
@@ -337,7 +340,6 @@ $config['graph_colours']['mega']=array_merge(
     $config['graph_colours']['default'],
     $config['graph_colours']['mixed']
 );
-
 
 // Map colors
 $config['network_map_legend'] = array(
@@ -518,13 +520,8 @@ $config['bad_if'][] = 'span sp';
 $config['bad_if'][] = 'sslvpn';
 $config['bad_if'][] = 'pppoe-';
 
-#custom
-$config['bad_if'][] = 'gre';
-$config['bad_if'][] = 'ipip';
-$config['bad_if'][] = 'pime';
-$config['bad_if'][] = 'pimd';
-$config['bad_if'][] = 'mtun';
 
+$config['bad_if'][] = 'irtual';
 // $config['bad_if'][] = "control plane";  // Example for cisco control plane
 // Ignore ports based on ifType. Case-sensitive.
 $config['bad_iftype'][] = 'voiceEncap';
@@ -545,6 +542,11 @@ $config['bad_iftype'][] = 'shdsl';
 $config['bad_iftype'][] = 'mpls';
 
 #custom
+$config['bad_if'][] = 'gre';
+$config['bad_if'][] = 'ipip';
+$config['bad_if'][] = 'pime';
+$config['bad_if'][] = 'pimd';
+$config['bad_if'][] = 'mtun';
 $config['bad_iftype'][] = 'l3ipvlan';
 $config['bad_iftype'][] = 'other';
 $config['bad_iftype'][] = 'softwareLoopback';
@@ -735,6 +737,7 @@ $config['poller_modules']['junose-atm-vp']               = 0;
 $config['poller_modules']['toner']                       = 0;
 $config['poller_modules']['ucd-diskio']                  = 1;
 $config['poller_modules']['wifi']                        = 0;
+$config['poller_modules']['wireless']                    = 1;
 $config['poller_modules']['ospf']                        = 1;
 $config['poller_modules']['cisco-ipsec-flow-monitor']    = 0;
 $config['poller_modules']['cisco-remote-access-monitor'] = 0;
@@ -799,14 +802,7 @@ $config['discovery_modules']['stp']                  = 1;
 $config['discovery_modules']['ntp']                  = 1;
 $config['discovery_modules']['loadbalancers']        = 0;
 $config['discovery_modules']['mef']                  = 0;
-
-$config['modules_compat']['rfc1628']['liebert']    = 1;
-$config['modules_compat']['rfc1628']['netmanplus'] = 1;
-$config['modules_compat']['rfc1628']['deltaups']   = 1;
-$config['modules_compat']['rfc1628']['poweralert'] = 1;
-$config['modules_compat']['rfc1628']['webpower']   = 1;
-$config['modules_compat']['rfc1628']['huaweiups']  = 1;
-$config['modules_compat']['rfc1628']['generex-ups']  = 1;
+$config['discovery_modules']['wireless']             = 1;
 
 // Enable daily updates
 $config['update'] = 1;
