@@ -28,6 +28,10 @@ rrd
 !/lib/yaml
 /vendor
 composer.phar
+
+# Docs #
+########
+out
 librenms_theme
 rename_script
 rename_script.sh
