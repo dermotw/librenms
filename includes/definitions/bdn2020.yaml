@@ -1,8 +1,0 @@
-os: bdn2020
-type: server
-group: unix
-text: Dialogic-BDN2020
-processor_stacked: 1
-over:
-    - { graph: device_processor, text: 'Processor Usage' }
-    - { graph: device_ucd_memory, text: 'Memory Usage' }

@@ -605,6 +605,7 @@ $config['graph_types']['device']['eltek_voltage']['section']	= 'power';
 $config['graph_types']['device']['eltek_voltage']['order']	= 0;
 $config['graph_types']['device']['eltek_voltage']['descr']	= 'Voltage';
 
+
 // Device Types
 $i = 0;
 $config['device_types'][$i]['text'] = 'Servers';
