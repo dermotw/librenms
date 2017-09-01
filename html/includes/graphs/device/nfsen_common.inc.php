@@ -39,6 +39,9 @@ foreach ($config['nfsen_rrds'] as $nfsenrrds) {
             // set a multiplier which in turn will create a CDEF if this var is set
             if ($dsprefix == 'traffic_') {
                 $multiplier = '8';
+		if ( isset( $config['nfsen_sample_rate'][$nfsen_filename] ) ) {
+			$multiplier = $multiplier * $config['nfsen_sample_rate'][$nfsen_filename];
+		}
             }
 
             $colours   = 'blues';

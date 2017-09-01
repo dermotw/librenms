@@ -35,3 +35,7 @@ out
 librenms_theme
 rename_script
 rename_script.sh
+
+html/images/os/bdn2020.png
+html/includes/graphs/device/dialogic_cpubusy.inc.php
+includes/polling/os/bdn2020.inc.php
