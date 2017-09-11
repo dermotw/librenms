@@ -28,6 +28,7 @@ rrd
 !/lib/yaml
 /vendor
 composer.phar
+.ssh
 
 # Docs #
 ########

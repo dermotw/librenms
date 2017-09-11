@@ -605,6 +605,12 @@ $config['graph_types']['device']['eltek_voltage']['section']	= 'power';
 $config['graph_types']['device']['eltek_voltage']['order']	= 0;
 $config['graph_types']['device']['eltek_voltage']['descr']	= 'Voltage';
 
+// Aviat
+$config['graph_types']['device']['aviat_rsl']['section']	= 'wireless';
+$config['graph_types']['device']['aviat_rsl']['order']		= '0';
+$config['graph_types']['device']['aviat_rsl']['descr']		= 'RSL';
+
+
 
 // Device Types
 $i = 0;
