@@ -66,6 +66,7 @@ if (!$where) {
     echo "Debugging and testing options:\n";
     echo "-r                                           Do not create or update RRDs\n";
     echo "-f                                           Do not insert data into InfluxDB\n";
+    echo "-p                                           Do not insert data into Prometheus\n";
     echo "-d                                           Enable debugging output\n";
     echo "-v                                           Enable verbose debugging output\n";
     echo "-m                                           Specify module(s) to be run\n";
@@ -75,7 +76,7 @@ if (!$where) {
 }
 
 if (isset($options['d']) || isset($options['v'])) {
-    $versions = version_info(false);
+    $versions = version_info();
     echo <<<EOH
 ===================================
 Version info:
@@ -94,6 +95,7 @@ EOH;
         $vdebug = true;
     }
     $debug = true;
+    update_os_cache(true); // Force update of OS Cache
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
     ini_set('log_errors', 1);
@@ -112,6 +114,10 @@ if (isset($options['r'])) {
 
 if (isset($options['f'])) {
     $config['noinfluxdb'] = true;
+}
+
+if (isset($options['p'])) {
+    $prometheus = false;
 }
 
 if (isset($options['g'])) {

@@ -1,4 +1,7 @@
 <?php
+
+use LibreNMS\Authentication\Auth;
+
 $pagetitle[] = 'About';
 $git_log = `git log -10`;
 ?>
@@ -86,7 +89,7 @@ echo "
     <table class='table table-condensed'>
       <tr>";
 
-if (is_admin() === true) {
+if (Auth::user()->hasGlobalAdmin()) {
     echo "        <td colspan='4'><span class='bg-danger'>$callback</span><br />
           Online stats: <a href='https://stats.librenms.org/'>stats.librenms.org</a></td>
         <tr>
@@ -147,7 +150,7 @@ echo "
 
     <h3>LibreNMS is an autodiscovering PHP/MySQL-based network monitoring system.</h3>
 <?php
-$versions = version_info(false);
+$versions = version_info();
 $project_name    = $config['project_name'];
 $webserv_version = $_SERVER['SERVER_SOFTWARE'];
 $php_version     = $versions['php_ver'];
@@ -178,6 +181,7 @@ echo "
 
     <p>
       <a href="http://www.librenms.org/">Web site</a> |
+      <a href="https://docs.librenms.org/">Docs</a> |
       <a href="https://github.com/librenms/">GitHub</a> |
       <a href="https://github.com/librenms/librenms/issues">Bug tracker</a> |
       <a href="https://community.librenms.org">Community Forum</a> |

@@ -12,7 +12,7 @@
  * the source code distribution for details.
  */
 
-if (strpos($_SERVER['PATH_INFO'], 'debug')) {
+/*if (strpos($_SERVER['PATH_INFO'], 'debug')) {
     $debug = '1';
     ini_set('display_errors', 1);
     ini_set('display_startup_errors', 1);
@@ -24,7 +24,7 @@ if (strpos($_SERVER['PATH_INFO'], 'debug')) {
     ini_set('display_startup_errors', 0);
     ini_set('log_errors', 0);
     ini_set('error_reporting', 0);
-}
+}*/
 
 $init_modules = array('web', 'auth');
 require realpath(__DIR__ . '/..') . '/includes/init.php';

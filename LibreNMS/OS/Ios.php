@@ -26,11 +26,13 @@
 namespace LibreNMS\OS;
 
 use LibreNMS\Device\WirelessSensor;
+use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessClientsDiscovery;
 use LibreNMS\Interfaces\Discovery\Sensors\WirelessRssiDiscovery;
 use LibreNMS\OS;
+use LibreNMS\OS\Shared\Cisco;
 
-class Ios extends OS implements
+class Ios extends Cisco implements
     WirelessClientsDiscovery,
     WirelessRssiDiscovery
 {
@@ -96,6 +98,8 @@ class Ios extends OS implements
      */
     public function discoverWirelessRssi()
     {
+        $sensors = array();
+
         $data = snmpwalk_cache_oid($this->getDevice(), 'c3gCurrentGsmRssi', array(), 'CISCO-WAN-3G-MIB');
         foreach ($data as $index => $entry) {
             $sensors[] = new WirelessSensor(
