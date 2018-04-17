@@ -551,6 +551,10 @@ $config['graph_types']['device']['secureplatform_sessions']['descr'] = 'Active c
 $config['graph_types']['device']['arbos_flows']['section']         = 'graphs';
 $config['graph_types']['device']['arbos_flows']['order']           = '0';
 $config['graph_types']['device']['arbos_flows']['descr']           = 'Accumulative flow count per SP device';
+// Aviat
+$config['graph_types']['device']['aviat_rsl']['section']	= 'wireless';
+$config['graph_types']['device']['aviat_rsl']['order']		= '0';
+$config['graph_types']['device']['aviat_rsl']['descr']		= 'RSL';
 
 // Device Types
 $i = 0;
