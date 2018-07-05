@@ -50,6 +50,9 @@ if (bill_permitted($bill_id)) {
     $unixfrom = dbFetchCell("SELECT UNIX_TIMESTAMP('$datefrom')");
     $unixto   = dbFetchCell("SELECT UNIX_TIMESTAMP('$dateto')");
 
+    $weekstart = strtotime('last week monday');
+    $weekend   = strtotime('last week sunday');
+
     $unix_prev_from = dbFetchCell("SELECT UNIX_TIMESTAMP('$lastfrom')");
     $unix_prev_to   = dbFetchCell("SELECT UNIX_TIMESTAMP('$lastto')");
     // Speeds up loading for other included pages by setting it before progessing of mysql data!
@@ -241,7 +244,7 @@ if ($vars['view'] == 'accurate') {
     $bi .= '&amp;from='.$unixfrom.'&amp;to='.$unixto;
     $bi .= "&amp;width=1000&amp;height=200&amp;total=1'>";
 
-    $li  = "<img src='graph.php?type=bill_bits&amp;id=".$bill_id;
+    $li  = "<img alt='fart' src='graph.php?type=bill_bits&amp;id=".$bill_id;
     $li .= '&amp;from='.$unix_prev_from.'&amp;to='.$unix_prev_to;
     $li .= "&amp;width=1000&amp;height=200&amp;total=1'>";
 
@@ -252,6 +255,10 @@ if ($vars['view'] == 'accurate') {
     $mi  = "<img src='graph.php?type=bill_bits&amp;id=".$bill_id;
     $mi .= '&amp;from='.$lastmonth.'&amp;to='.$rightnow;
     $mi .= "&amp;width=1000&amp;height=200&amp;total=1'>";
+
+    $wi  = "<img src='graph.php?type=bill_bits&amp;id=".$bill_id;
+    $wi .= '&amp;from='.$weekstart.'&amp;to='.$weekend;
+    $wi .= "&amp;width=1000&amp;height=200&amp;total=1'>";
 }//end if
 
 ?>
@@ -269,6 +276,19 @@ if ($vars['view'] == 'accurate') {
     <?php echo $di ?>
     </div>
 
+    <div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Last Week</h3>
+    </div>
+    <?php echo $wi ?>
+    </div>    
+
+    <div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Monthly View</h3>
+    </div>
+    <?php echo $mi ?>
+    </div>    
     <div class="panel panel-default">
     <div class="panel-heading">
         <h3 class="panel-title">Monthly View</h3>
