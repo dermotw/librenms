@@ -8,9 +8,12 @@
 !/.github/
 !/.codeclimate.yml
 !/.mention-bot
+!/.env.example
 
 # Others #
 ##########
+__pycache__
+*.pyc
 *.swp
 Thumbs.db
 config.php
@@ -24,8 +27,11 @@ nbproject
 patches
 !/lib/yaml
 /vendor
+/node_modules
 composer.phar
+<<<<<<< HEAD
 .ssh
+_ide_helper.php
 
 # Docs #
 ########
