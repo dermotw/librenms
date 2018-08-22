@@ -219,11 +219,11 @@ function record_sensor_data($device, $all_sensors)
 }
 
 /**
- * @param $device
- * @param $options
+ * @param array $device The device to poll
+ * @param bool $force_module Ignore device module overrides
  * @return bool
  */
-function poll_device($device, $options)
+function poll_device($device, $force_module = false)
 {
     global $config, $device;
 
@@ -244,7 +244,8 @@ function poll_device($device, $options)
     echo 'Device ID: ' . $device['device_id'] . PHP_EOL;
     echo 'OS: ' . $device['os'];
     $ip = dnslookup($device);
-    $db_ip = inet_pton($ip);
+
+    $db_ip = isset($ip) ? inet_pton($ip) : null;
 
     if (!empty($db_ip) && inet6_ntop($db_ip) != inet6_ntop($device['ip'])) {
         log_event('Device IP changed to ' . $ip, $device, 'system', 3);
@@ -276,20 +277,9 @@ function poll_device($device, $options)
         $graphs    = array();
         $oldgraphs = array();
 
-        $force_module = false;
         if ($device['snmp_disable']) {
             $config['poller_modules'] = array();
         } else {
-            if ($options['m']) {
-                $config['poller_modules'] = array();
-                foreach (explode(',', $options['m']) as $module) {
-                    if (is_file('includes/polling/' . $module . '.inc.php')) {
-                        $config['poller_modules'][$module] = 1;
-                        $force_module = true;
-                    }
-                }
-            }
-
             // we always want the core module to be included, prepend it
             $config['poller_modules'] = array('core' => true) + $config['poller_modules'];
         }
@@ -667,15 +657,15 @@ function update_application($app, $response, $metrics = array(), $status = '')
                     array(
                         'app_id' => $app['app_id'],
                         'metric' => $metric_name,
-                        'value' => (int)$value,
+                        'value' => $value,
                     ),
                     'application_metrics'
                 );
                 echo '+';
-            } elseif ((int)$value != (int)$db_metrics[$metric_name]['value']) {
+            } elseif ($value != $db_metrics[$metric_name]['value']) {
                 dbUpdate(
                     array(
-                        'value' => (int)$value,
+                        'value' => $value,
                         'value_prev' => $db_metrics[$metric_name]['value'],
                     ),
                     'application_metrics',
@@ -752,7 +742,12 @@ function convert_to_celsius($value)
  * @param integer $min_version the minimum version to accept for the returned JSON. default: 1
  *
  * @return array The json output data parsed into an array
+ * @throws JsonAppBlankJsonException
+ * @throws JsonAppExtendErroredException
+ * @throws JsonAppMissingKeysException
+ * @throws JsonAppParsingFailedException
  * @throws JsonAppPollingFailedException
+ * @throws JsonAppWrongVersionException
  */
 function json_app_get($device, $extend, $min_version = 1)
 {
