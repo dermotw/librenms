@@ -549,6 +549,11 @@ $config['graph_types']['device']['aviat_rsl']['section']	= 'wireless';
 $config['graph_types']['device']['aviat_rsl']['order']		= '0';
 $config['graph_types']['device']['aviat_rsl']['descr']		= 'RSL';
 
+//F5 specific graphs
+$config['graph_types']['device']['apm_sessions']['section']      = 'apm';
+$config['graph_types']['device']['apm_sessions']['order']        = '0';
+$config['graph_types']['device']['apm_sessions']['descr']        = 'Active Sessions';
+
 // Device Types
 $i = 0;
 $config['device_types'][$i]['text'] = 'Servers';
