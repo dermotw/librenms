@@ -1,5 +1,5 @@
 <?php
 
-if ( str_contains( $sysDescr, array( 'WebPower' ) ) ) {
+if ( starts_with( $device['sysDescr'], 'WebPower') ) {
  $os = 'eltek';
 }
