@@ -18,7 +18,6 @@ require __DIR__ . '/includes/init.php';
 if ($argv[1] && $argv[2]) {
     $host = strtolower($argv[1]);
     $id   = getidbyname($host);
-	print $id;
     if ($id) {
         $tohost = strtolower($argv[2]);
         $toid   = getidbyname($tohost);

@@ -267,6 +267,7 @@ $config['graph_colours']['mixed']   = array(
     'D01F3C',
     '36393D',
     'FF0084',
+    '91B13C',
 );
 $config['graph_colours']['oranges'] = array(
     'E43C00',
@@ -558,8 +559,6 @@ $config['bad_if'][] = 'span rp';
 $config['bad_if'][] = 'span sp';
 $config['bad_if'][] = 'sslvpn';
 $config['bad_if'][] = 'pppoe-';
-
-
 $config['bad_if'][] = 'irtual';
 // $config['bad_if'][] = "control plane";  // Example for cisco control plane
 // Ignore ports based on ifType. Case-sensitive.
@@ -580,29 +579,14 @@ $config['bad_iftype'][] = 'aal5';
 $config['bad_iftype'][] = 'shdsl';
 $config['bad_iftype'][] = 'mpls';
 
-#custom
-$config['bad_if'][] = 'gre';
-$config['bad_if'][] = 'ipip';
-$config['bad_if'][] = 'pime';
-$config['bad_if'][] = 'pimd';
-$config['bad_if'][] = 'mtun';
-$config['bad_iftype'][] = 'l3ipvlan';
-$config['bad_iftype'][] = 'other';
-$config['bad_iftype'][] = 'softwareLoopback';
-$config['bad_iftype'][] = 'propVirtual';
-
 $config['bad_if_regexp'][] = '/^ng[0-9]+$/';
 $config['bad_if_regexp'][] = '/^sl[0-9]/';
 
-$config['bad_if_regexp'][] = '/^pd-/';
-$config['bad_if_regexp'][] = '/^pe-/';
-$config['bad_if_regexp'][] = '/^gr-/';
-$config['bad_if_regexp'][] = '/^ip-/';
-$config['bad_if_regexp'][] = '/^ls-/';
-$config['bad_if_regexp'][] = '/^mt-/';
-
 // Rewrite Interfaces
 $config['rewrite_if_regexp']['/^cpu interface/'] = 'Mgmt';
+
+// Storage default warning percentage
+$config['storage_perc_warn'] = 60;
 
 $config['ignore_mount_removable'] = 1;
 // Ignore removable disk storage
@@ -716,8 +700,9 @@ $config['ignore_mount_regexp'][] = '/on: \/junos\/dev/';
 $config['ignore_mount_regexp'][] = '/on: \/jail\/dev/';
 $config['ignore_mount_regexp'][] = '/^(dev|proc)fs/';
 $config['ignore_mount_regexp'][] = '/^\/dev\/md0/';
-$config['ignore_mount_regexp'][] = '/^\/var\/dhcpd\/dev,/';
+$config['ignore_mount_regexp'][] = '/^\/var\/dhcpd\/dev/';
 $config['ignore_mount_regexp'][] = '/UMA/';
+$config['ignore_mount_regexp'][] = "/^\/Volumes\/OS X Base System/";
 
 $config['ignore_mount_removable'] = 1;
 // Ignore removable disk storage
@@ -802,6 +787,7 @@ $config['poller_modules']['cisco-voice']                 = false;
 $config['poller_modules']['cisco-cbqos']                 = false;
 $config['poller_modules']['cisco-otv']                   = false;
 $config['poller_modules']['cisco-vpdn']                  = false;
+$config['poller_modules']['nac']                         = false;
 $config['poller_modules']['netscaler-vsvr']              = false;
 $config['poller_modules']['aruba-controller']            = false;
 $config['poller_modules']['entity-physical']             = true;
@@ -857,6 +843,9 @@ $config['discovery_modules']['fdb-table']            = true;
 // Enable daily updates
 $config['update'] = 1;
 
+// Sets automatic sensor limits when no values are returned by the device.
+$config['sensors']['guess_limits']                   = true;
+
 // Purge syslog and eventlog
 $config['syslog_purge'] = 30;
 // Number in days of how long to keep syslog entries for.
@@ -870,6 +859,8 @@ $config['device_perf_purge'] = 7;
 // Number in days of how long to keep device performance data for.
 $config['alert_log_purge'] = 365;
 // Number in days of how long to keep alert log data for.
+$config['ports_fdb_purge'] = 10;
+// Number in days of how long to keep fdb table data for.
 
 // Date format for PHP date()s
 $config['dateformat']['long'] = 'r';
@@ -904,6 +895,20 @@ $config['distributed_poller_group']          = 0;
 $config['distributed_poller_memcached_host'] = 'example.net';
 $config['distributed_poller_memcached_port'] = '11211';
 
+// BETA polller service config options.
+// See https://docs.librenms.org/Extensions/Poller-Service/ for more information
+//$config['service_poller_workers']              = 24;     # Processes spawned for polling
+//$config['service_services_workers']            = 8;      # Processes spawned for service polling
+//$config['service_discovery_workers']           = 16;     # Processes spawned for discovery
+// Optional BETA polller service Settings
+//$config['service_poller_frequency']            = 300;    # Seconds between polling attempts
+//$config['service_services_frequency']          = 300;    # Seconds between service polling attempts
+//$config['service_discovery_frequency']         = 21600;  # Seconds between discovery runs
+//$config['service_billing_frequency']           = 300;    # Seconds between billing calculations
+//$config['service_billing_calculate_frequency'] = 60;     # Billing interval
+//$config['service_poller_down_retry']           = 60;     # Seconds between failed polling attempts
+//$config['service_loglevel']                    = 'INFO'; # Must be one of 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
+
 // Stats callback system
 $config['callback_post']  = 'https://stats.librenms.org/log.php';
 $config['callback_clear'] = 'https://stats.librenms.org/clear.php';
@@ -936,8 +941,8 @@ $config['unix-agent-read-time-out'] = 10;
 // seconds
 
 // Lat / Lon support for maps
-$config['geoloc']['latlng']                             = true; // True to enable translation of location to latlng co-ordinates
-$config['geoloc']['engine']                             = 'google';
+#$config['geoloc']['latlng']                             = true; // True to enable translation of location to latlng co-ordinates
+#$config['geoloc']['engine']                             = 'google';
 $config['map']['engine']                                = 'leaflet';
 $config['mapael']['default_map']                        = 'maps/world_countries.js';
 $config['leaflet']['default_lat']                       = '51.4800';
@@ -982,13 +987,6 @@ $config['xirrus_disable_stations']  = false;
 
 // Graphite default port
 $config['graphite']['port']         = 2003;
-
-// Whether to enable secure cookies. Setting this to true enable secure cookies
-// and only send them over HTTPS. Setting this to false will send cookies over
-// HTTP and HTTPS, but they will be insecure. Setting this to $_SERVER["HTTPS"]
-// will send secure cookies when the site is being accessed over HTTPS, and
-// send insecure cookies when the site is being accessed over HTTP.
-$config['secure_cookies'] = isset($_SERVER["HTTPS"]) ? $_SERVER["HTTPS"] : false;
 
 // API config
 $config['api']['cors']['enabled'] = false;
