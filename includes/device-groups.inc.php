@@ -109,6 +109,7 @@ function GenGroupSQL($pattern, $search = '', $extra = 0)
     if ($tables[0] != 'devices' && dbFetchCell('SELECT 1 FROM information_schema.COLUMNS WHERE TABLE_NAME = ? && COLUMN_NAME = ?', array($tables[0],'device_id')) != 1) {
         //Our first table has no valid glue, prepend the 'devices' table to it!
         array_unshift($tables, 'devices');
+        $tables = array_unique($tables); // remove devices from later in the array if it exists
     }
     $x = sizeof($tables)-1;
     $i = 0;
@@ -127,7 +128,12 @@ function GenGroupSQL($pattern, $search = '', $extra = 0)
                     list($tmp,$last) = explode('.', $glue);
                     $qry .= $glue.' = ';
                 } else {
-                    list($tmp,$new) = explode('.', $glue);
+                    $parts = explode('.', $glue);
+                    if (count($parts) == 3) {
+                        list($tmp, $new, $last) = $parts;
+                    } else {
+                        list($tmp,$new) = $parts;
+                    }
                     $qry .= $tmp.'.'.$last.' && '.$tmp.'.'.$new.' = ';
                     $last = $new;
                 }

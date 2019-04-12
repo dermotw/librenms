@@ -27,8 +27,10 @@ namespace LibreNMS\Tests;
 
 use LibreNMS\Util\Snmpsim;
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
+    use SnmpsimHelpers;
+
     /** @var Snmpsim snmpsim instance */
     protected $snmpsim = null;
 
@@ -38,6 +40,12 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         // grab global $snmpsim from bootstrap and make it accessible
         global $snmpsim;
         $this->snmpsim = $snmpsim;
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        set_debug(false); // prevent warnings from stopping execution for legacy code
     }
 
     public function dbSetUp()
@@ -55,13 +63,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         if (getenv('DBTEST')) {
             \LibreNMS\DB\Eloquent::DB()->rollBack();
-        }
-    }
-
-    public function requreSnmpsim()
-    {
-        if (!getenv('SNMPSIM')) {
-            $this->markTestSkipped('Snmpsim required for this test.  Set SNMPSIM=1 to enable.');
         }
     }
 }

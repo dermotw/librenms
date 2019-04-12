@@ -220,6 +220,7 @@ if ($device['os'] === 'f5' && (version_compare($device['version'], '11.2.0', '>=
 
         foreach ($polled_ports as $port_id => $port) {
             $ifIndex = $port['ifIndex'];
+            $port_stats[$ifIndex]['ifType'] = $port['ifType']; // we keep it as it is not included in $base_oids
 
             if (is_port_valid($port, $device)) {
                 if (!$walk_base) {
@@ -303,6 +304,22 @@ if ($device['os'] == 'cmm') {
     require_once 'ports/cmm.inc.php';
 }
 
+if ($device['os'] == 'nokia-isam') {
+    require_once 'ports/nokia-isam.inc.php';
+}
+
+if ($device['os'] == 'timos') {
+    require_once 'ports/timos.inc.php';
+}
+
+if ($device['os'] == 'infinera-groove') {
+    require_once 'ports/infinera-groove.inc.php';
+}
+
+if ($device['os'] == 'junos') {
+    require_once 'ports/junos-vcp.inc.php';
+}
+
 if ($config['enable_ports_adsl']) {
     $device['xdsl_count'] = dbFetchCell("SELECT COUNT(*) FROM `ports` WHERE `device_id` = ? AND `ifType` in ('adsl','vdsl')", [$device['device_id']]);
 }
@@ -359,6 +376,23 @@ if ($config['enable_ports_poe']) {
 
         foreach ($vrp_poe_oids as $oid) {
             $port_stats = snmpwalk_cache_oid($device, $oid, $port_stats, 'HUAWEI-POE-MIB');
+        }
+    } elseif ($device['os'] == 'linksys-ss') {
+        echo 'rlPethPsePort' ;
+
+        $linksys_poe_oids = array(
+            'pethPsePortAdminEnable',
+            'rlPethPsePortPowerLimit',
+            'rlPethPsePortOutputPower',
+        );
+
+        foreach ($linksys_poe_oids as $oid) {
+            $port_stats_temp = snmpwalk_cache_oid($device, $oid, $port_stats_temp, 'LINKSYS-POE-MIB:POWER-ETHERNET-MIB');
+        }
+        foreach ($port_stats_temp as $key => $value) {
+            //remove the group index and only keep the ifIndex
+            [$group_id, $if_id] = explode(".", $key);
+            $port_stats[$if_id] = array_merge($port_stats[$if_id], $value);
         }
     } else {
         //Any other device, generic polling
@@ -417,7 +451,7 @@ foreach ($port_stats as $ifIndex => $port) {
         d_echo(' valid');
 
         // Port newly discovered?
-        if (! $ports[$port_id]) {
+        if (!$port_id || empty($ports[$port_id])) {
             /**
               * When using the ifName or ifDescr as means to map discovered ports to
               * known ports in the DB (think of port association mode) it's possible
@@ -571,6 +605,11 @@ foreach ($ports as $port) {
             }
         }
 
+        // work around invalid values for ifHighSpeed (fortigate)
+        if ($this_port['ifHighSpeed'] == 4294901759) {
+            $this_port['ifHighSpeed'] = null;
+        }
+
         if (isset($this_port['ifHighSpeed']) && is_numeric($this_port['ifHighSpeed'])) {
             d_echo('ifHighSpeed ');
             $this_port['ifSpeed'] = ($this_port['ifHighSpeed'] * 1000000);
@@ -614,22 +653,9 @@ foreach ($ports as $port) {
         // FIXME use $q_bridge_mib[$this_port['ifIndex']] to see if it is a trunk (>1 array count)
         echo "VLAN = {$this_port['ifVlan']} ";
 
-        // When devices do not provide ifDescr data, populate with ifName data if available
-        if ($this_port['ifDescr'] == '' || $this_port['ifDescr'] == null) {
-            $this_port['ifDescr'] = $this_port['ifName'];
-            d_echo('Using ifName as ifDescr');
-        }
+        // attempt to fill missing fields
+        port_fill_missing($this_port, $device);
 
-        // When devices do not provide ifAlias data, populate with ifDescr data if configured
-        if ($this_port['ifAlias'] == '' || $this_port['ifAlias'] == null) {
-            $this_port['ifAlias'] = $this_port['ifDescr'];
-            d_echo('Using ifDescr as ifAlias');
-        }
-
-        if ($this_port['ifName'] == '' || $this_port['ifName'] == null) {
-            $this_port['ifName'] = $this_port['ifDescr'];
-            d_echo('Using ifDescr as ifName');
-        }
 
         // Update IF-MIB data
         $tune_port = false;

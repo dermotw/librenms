@@ -7,15 +7,14 @@ path: blob/master/doc/
 An official LibreNMS docker image based on Alpine Linux and Nginx is available on [DockerHub](https://hub.docker.com/r/librenms/librenms/) and [Quay](https://quay.io/repository/librenms/librenms). Documentation can be found on the [Github repository](https://github.com/librenms/docker).
 
 ## Images
-We have some pre-built VirtualBox images you can use to get started. Please note that these images are pre-built for VirtualBox, hence they might not work with other hypervisors without converting them:
+We have some pre-built VirtualBox images you can use to get started:
 
-- [Ubuntu 16.04](http://docs.librenms.org/Installation/Ubuntu-image/)
-- [CentOS 7](http://docs.librenms.org/Installation/CentOS-image/)
+- [Virtual Machines](http://docs.librenms.org/Installation/Images/)
 
 ## Manually
 If you want to install manually then we have some documentation which should make it easy.
 
-**Please note the minimum supported PHP version is 5.6.4**
+**Please note the minimum supported PHP version is 7.1.3**
 
 - [Ubuntu 18.04 Apache](http://docs.librenms.org/Installation/Installation-Ubuntu-1804-Apache/)
 - [Ubuntu 18.04 Nginx](http://docs.librenms.org/Installation/Installation-Ubuntu-1804-Nginx/)
@@ -23,7 +22,7 @@ If you want to install manually then we have some documentation which should mak
 - [RHEL / CentOS 7 Nginx](http://docs.librenms.org/Installation/Installation-CentOS-7-Nginx/)
 
 ### Old Install Docs
-If the above are missing or incomplete then you can try our old docs below.
+These install docs are longer updated and may result in an unsuccessful install.
 
 - [Ubuntu 16.04 Apache](http://docs.librenms.org/Installation/Installation-Ubuntu-1604-Apache/)
 - [Ubuntu 16.04 Nginx](http://docs.librenms.org/Installation/Installation-Ubuntu-1604-Nginx/)
@@ -31,11 +30,3 @@ If the above are missing or incomplete then you can try our old docs below.
 - [RHEL/CentOS](http://docs.librenms.org/Installation/Installation-CentOS-6-Apache-Nginx/)
 - [Debian/Ubuntu Lighttpd](http://docs.librenms.org/Installation/Installation-Ubuntu-1404-Lighttpd/)
 - [Debian/Ubuntu Nginx](http://docs.librenms.org/Installation/Installation-Ubuntu-1404-Nginx/)
-
-## Third-party
-Third-party installation supports have been created by the community.
-
-### Docker images
-
-- [crazymax/librenms](https://github.com/crazy-max/docker-librenms) based on Alpine Linux by [CrazyMax](https://github.com/crazy-max)
-- [jarischaefer/docker-librenms](https://github.com/jarischaefer/docker-librenms) based on Ubuntu by [Jari Schäfer](https://github.com/jarischaefer)

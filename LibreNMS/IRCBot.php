@@ -678,7 +678,7 @@ class IRCBot
         $schema_version = $versions['db_schema'];
         $version        = substr($versions['local_sha'], 0, 7);
 
-        $msg = $this->config['project_name_version'].', Version: '.$version.', DB schema: #'.$schema_version.', PHP: '.PHP_VERSION;
+        $msg = $this->config['project_name_version'].', Version: '.$version.', DB schema: '.$schema_version.', PHP: '.PHP_VERSION;
         return $this->respond($msg);
     }//end _version()
 
@@ -691,13 +691,13 @@ class IRCBot
         }
 
         if ($this->user['level'] < 5) {
-            $tmp = dbFetchRows('SELECT `event_id`,`host`,`datetime`,`message`,`type` FROM `eventlog` WHERE `host` IN ('.implode(',', $this->user['devices']).') ORDER BY `event_id` DESC LIMIT '.mres($num));
+            $tmp = dbFetchRows('SELECT `event_id`,`device_id`,`datetime`,`message`,`type` FROM `eventlog` WHERE `device_id` IN ('.implode(',', $this->user['devices']).') ORDER BY `event_id` DESC LIMIT '. (int)$num);
         } else {
-            $tmp = dbFetchRows('SELECT `event_id`,`host`,`datetime`,`message`,`type` FROM `eventlog` ORDER BY `event_id` DESC LIMIT '.mres($num));
+            $tmp = dbFetchRows('SELECT `event_id`,`device_id`,`datetime`,`message`,`type` FROM `eventlog` ORDER BY `event_id` DESC LIMIT '.(int)$num);
         }
 
         foreach ($tmp as $device) {
-            $hostid = dbFetchRow('SELECT `hostname` FROM `devices` WHERE `device_id` = '.$device['host']);
+            $hostid = dbFetchRow('SELECT `hostname` FROM `devices` WHERE `device_id` = '.$device['device_id']);
             $this->respond($device['event_id'].' '.$hostid['hostname'].' '.$device['datetime'].' '.$device['message'].' '.$device['type']);
         }
 

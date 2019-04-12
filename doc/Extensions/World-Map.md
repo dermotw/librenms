@@ -62,6 +62,19 @@ $config['leaflet']['group_radius']                      = 1;    // Device groupi
 $config['geoloc']['engine'] = "google";// Valid options are google, mapquest or bing
 $config['geoloc']['api_key'] = "abcdefghijklmnopqrstuvwxyz";
 ```
+Google:
+Pros: fast, accurate
+Cons: requires a credit card even for a free account
+
+MapQuest:
+Pros: free, no credit card required
+Cons: inaccurate: most addresses are returned as locations at the center of the US
+
+Bing:
+Pros: free, no credit card required, accurate
+Cons: Microsoft(debatable)
+
+
 ### Jquery-Mapael config
 Further custom options are available to load different maps of the world, set default coordinates of where the map will zoom and the zoom level by default. An example of
 this is:

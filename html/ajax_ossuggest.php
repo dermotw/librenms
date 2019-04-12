@@ -21,7 +21,7 @@ $init_modules = array('web', 'auth');
 require realpath(__DIR__ . '/..') . '/includes/init.php';
 
 if (!LegacyAuth::check()) {
-    die('Unauthorized.');
+    die('Unauthorized');
 }
 
 set_debug($_REQUEST['debug']);
@@ -56,6 +56,7 @@ function levsortos($base, $obj, $keys)
 
 header('Content-type: application/json');
 if (isset($_GET['term'])) {
+    load_all_os();
     $_GET['term'] = clean($_GET['term']);
     $sortos = levsortos($_GET['term'], $config['os'], array("text", "os"));
     $sortos = array_slice($sortos, 0, 20);

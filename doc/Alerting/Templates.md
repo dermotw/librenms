@@ -9,7 +9,7 @@ Templates can be assigned to a single or a group of rules and can contain any ki
 
 To attach a template to a rule just open the `Alert Templates` settings page, choose the template to assign and click the yellow button in the `Actions` column. In the appearing popupbox select the rule(s) you want the template to be assigned to and click the `Attach` button. You might hold down the CTRL key to select multiple rules at once.
 
-The templating engine in use is Laravel Blade. We will cover some of the basics here, however the official Laravel docs will have more information [here](https://laravel.com/docs/5.4/blade) 
+The templating engine in use is Laravel Blade. We will cover some of the basics here, however the official Laravel docs will have more information [here](https://laravel.com/docs/5.7/blade) 
 
 ## Syntax
 
@@ -50,6 +50,9 @@ Placeholders are special variables that if used within the template will be repl
 - ping min (if icmp enabled): `$alert->ping_min`
 - ping max (if icmp enabled): `$alert->ping_max`
 - ping avg (if icmp enabled): `$alert->ping_avg`
+- debug (array) If `$config['debug']['run_trace] = true;` is set then this will contain:
+  - traceroute (if enabled you will receive traceroute output): `$alert->debug['traceroute']`
+  - output (if the traceroute fails this will contain why): `$alert->debug['output']`
 - Title for the Alert: `$alert->title`
 - Time Elapsed, Only available on recovery (`$alert->state == 0`): `$alert->elapsed`
 - Rule Builder (the actual rule) (use `{!! $alert->builder !!}`): `$alert->builder`
@@ -95,7 +98,7 @@ You can use plain text or html as per Alert templates and this will form the bas
 In your alert template just use
 
 ```
-@extends('alerts.templates.default');
+@extends('alerts.templates.default')
 
 @section('content')
   {{ $alert->title }}
@@ -104,11 +107,11 @@ In your alert template just use
 @endsection
 ```
 
-More info: https://laravel.com/docs/5.4/blade#extending-a-layout
+More info: https://laravel.com/docs/5.7/blade#extending-a-layout
 
 ## Examples
 
-Default Template:
+#### Default Template:
 ```text
 {{ $alert->title }}
 Severity: {{ $alert->severity }}
@@ -126,7 +129,7 @@ Alert sent to:
   {{ $value }} <{{ $key }}>
 @endforeach
 ```
-Ports Utilization Template:
+#### Ports Utilization Template:
 ```text
 {{ $alert->title }}
 Device Name: {{ $alert->hostname }}
@@ -143,7 +146,7 @@ Outbound Utilization: {{ (($value['ifOutOctets_rate']*8)/$value['ifSpeed'])*100 
 @endforeach
 ```
 
-Storage:
+#### Storage:
 ```text
 {{ $alert->title }}
 
@@ -165,7 +168,7 @@ Percent Utilized: {{ $value['storage_perc'] }}
 @endforeach
 ```
 
-Temperature Sensors:
+#### Temperature Sensors:
 ```text
 {{ $alert->title }}
 
@@ -191,7 +194,7 @@ High Temperature Limit: {{ $value['sensor_limit'] }} °C
 @endif
 ```
 
-Value Sensors:
+#### Value Sensors:
 ```text
 {{ $alert->title }}
 
@@ -217,7 +220,7 @@ Limit: {{ $value['sensor_limit'] }}
 @endif
 ```
 
-Memory Alert:
+#### Memory Alert:
 ```text
 {{ $alert->title }}
 
@@ -237,12 +240,23 @@ Percent Utilized: {{ $value['mempool_perc'] }}
 @endforeach 
 ```
 
+### Advanced options
 
+#### Conditional formatting
 Conditional formatting example, will display a link to the host in email or just the hostname in any other transport:
 ```text
 @if ($alert->transport == mail)<a href="https://my.librenms.install/device/device={{ $alert->hostname }}/">{{ $alert->hostname }}</a>
 @else
 {{ $alert->hostname }}
+@endif
+```
+
+#### Traceroute debugs
+```text
+@if ($alert->status == 0)
+    @if ($alert->status == icmp)
+        {{ $alert->debug['traceroute'] }}
+    @endif
 @endif
 ```
 
@@ -277,7 +291,7 @@ Service Alert:
 </div>
 ```
 
-Processor Alert with Graph:
+#### Processor Alert with Graph:
 ```
 {{ $alert->title }} <br>
 Severity: {{ $alert->severity }}  <br>
@@ -290,12 +304,26 @@ Rule: @if ($alert->name) {{ $alert->name }} @else {{ $alert->rule }} @endif <br>
 {{ $key }}: {{ $value['string'] }}<br>
 @endforeach 
 @if ($alert->faults) <b>Faults:</b><br>
-@foreach ($alert->faults as $key => $value)<img src="https://server/graph.php?device={{ $value['device_id'] }}&type=device_processor&width=459&height=213&lazy_w=552&from=end-72h><br>
+@foreach ($alert->faults as $key => $value)<img src="https://server/graph.php?device={{ $value['device_id'] }}&type=device_processor&width=459&height=213&lazy_w=552&from=end-72h"><br>
 https://server/graphs/id={{ $value['device_id'] }}/type=device_processor/<br>
 @endforeach 
 Template: CPU alert <br>
 @endif
 @endif
+```
+
+#### MS Teams formatted default template:
+```
+<a href="https://your.librenms.url/device/device={{ $alert->device_id }}/">{{ $alert->title }}</a>
+<pre><strong>Device name:</strong> {{ $alert->sysName }}
+<strong>Severity:</strong> {{ $alert->severity }}
+@if ($alert->state == 0)<strong>Time elapsed:</strong>{{ $alert->elapsed }}
+@endif<strong>Timestamp:</strong> {{ $alert->timestamp }}
+<strong>Unique-ID:</strong> {{ $alert->uid }}
+<strong>Rule:</strong>@if ($alert->name) {{ $alert->name }} @else {{ $alert->rule }} @endif</pre>
+<pre style="white-space:normal;">@if ($alert->faults) <strong>Faults:</strong>
+ @foreach ($alert->faults as $key => $value)  #{{ $key }}: {{ $value['string'] }}
+ @endforeach </pre>  @endif
 ```
 
 ## Included

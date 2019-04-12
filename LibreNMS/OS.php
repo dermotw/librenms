@@ -25,6 +25,7 @@
 
 namespace LibreNMS;
 
+use App\Models\Device;
 use LibreNMS\Device\WirelessSensor;
 use LibreNMS\Device\YamlDiscovery;
 use LibreNMS\Interfaces\Discovery\ProcessorDiscovery;
@@ -42,6 +43,7 @@ class OS implements ProcessorDiscovery
     }
 
     private $device; // annoying use of references to make sure this is in sync with global $device variable
+    private $device_model;
     private $cache; // data cache
     private $pre_cache; // pre-fetch data cache
 
@@ -74,6 +76,20 @@ class OS implements ProcessorDiscovery
         return (int)$this->device['device_id'];
     }
 
+    /**
+     * Get the Eloquent Device Model for the current device
+     *
+     * @return Device
+     */
+    public function getDeviceModel()
+    {
+        if (is_null($this->device_model)) {
+            $this->device_model = Device::find($this->getDeviceId());
+        }
+
+        return $this->device_model;
+    }
+
     public function preCache()
     {
         if (is_null($this->pre_cache)) {
@@ -90,9 +106,10 @@ class OS implements ProcessorDiscovery
      *
      * @param string $oid textual oid
      * @param string $mib mib for this oid
+     * @param string $snmpflags snmpflags for this oid
      * @return array array indexed by the snmp index with the value as the data returned by snmp
      */
-    public function getCacheByIndex($oid, $mib = null)
+    public function getCacheByIndex($oid, $mib = null, $snmpflags = '-OQUs')
     {
         if (str_contains($oid, '.')) {
             echo "Error: don't use this with numeric oids!\n";
@@ -100,7 +117,7 @@ class OS implements ProcessorDiscovery
         }
 
         if (!isset($this->cache[$oid])) {
-            $data = snmpwalk_cache_oid($this->getDevice(), $oid, array(), $mib);
+            $data = snmpwalk_cache_oid($this->getDevice(), $oid, array(), $mib, null, $snmpflags);
             $this->cache[$oid] = array_map('current', $data);
         }
 
@@ -168,7 +185,7 @@ class OS implements ProcessorDiscovery
             }
         }
 
-        d_echo("OS initilized as Generic\n");
+        d_echo("OS initialized as Generic\n");
         return new Generic($device);
     }
 

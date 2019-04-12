@@ -56,6 +56,8 @@ class DocTest extends TestCase
         'Installation/Installation-Ubuntu-1604-Nginx.md',
         'Installation/Installing-LibreNMS.md',
         'Support/Support-New-OS.md',
+        'Installation/Ubuntu-image.md',
+        'Installation/CentOS-image.md',
     ];
     
     public function testDocExist()
@@ -70,5 +72,7 @@ class DocTest extends TestCase
             ->each(function ($missing_doc) {
                 $this->fail("The doc $missing_doc doesn't exist in mkdocs.yml, please add it to the relevant section");
             });
+
+        $this->expectNotToPerformAssertions();
     }
 }

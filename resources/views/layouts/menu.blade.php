@@ -118,8 +118,9 @@
                     @if($locations)
                         <li role="presentation" class="divider"></li>
                         <li class="dropdown-submenu">
-                            <a href="#"><i class="fa fa-map-marker fa-fw fa-lg" aria-hidden="true"></i> Geo Locations</a>
+                            <a href="#"><i class="fa fa-map-marker fa-fw fa-lg" aria-hidden="true"></i> @lang('Geo Locations')</a>
                             <ul class="dropdown-menu scrollable-menu">
+                                <li><a href="{{ url('locations') }}"><i class="fa fa-map-marker fa-fw fa-lg" aria-hidden="true"></i> @lang('All Locations')</a></li>
                             @foreach($locations as $location)
                                     <li><a href="{{ url("devices/location=" . urlencode($location)) }}"><i class="fa fa-building fa-fw fa-lg" aria-hidden="true"></i> {{ $location }}</a></li>
                             @endforeach
@@ -319,6 +320,7 @@
                         <li><a href="{{ url('alert-rules') }}"><i class="fa fa-list fa-fw fa-lg" aria-hidden="true"></i> Alert Rules</a></li>
                         <li><a href="{{ url('alert-schedule') }}"><i class="fa fa-calendar fa-fw fa-lg" aria-hidden="true"></i> Scheduled Maintenance</a></li>
                         <li><a href="{{ url('templates') }}"><i class="fa fa-file fa-fw fa-lg" aria-hidden="true"></i> Alert Templates</a></li>
+                        <li><a href="{{ url('alert-transports') }}"><i class="fa fa-bus fa-fw fa-lg" aria-hidden="true"></i> Alert Transports</a></li>
                         @endadmin
                     </ul>
                 </li>
@@ -469,9 +471,6 @@
     devices.initialize();
     ports.initialize();
     bgp.initialize();
-    $('#gsearch').bind('typeahead:select', function(ev, suggestion) {
-        window.location.href = suggestion.url;
-    });
     $('#gsearch').typeahead({
             hint: true,
             highlight: true,
@@ -512,8 +511,12 @@
                 header: '<h5><strong>&nbsp;BGP Sessions</strong></h5>',
                 suggestion: Handlebars.compile('<p><a href="@{{url}}"><small>@{{bgp_image}} @{{name}} - @{{hostname}}<br />AS@{{localas}} -> AS@{{remoteas}}</small></a></p>')
             }
+        }).on('typeahead:select', function (ev, suggestion) {
+            window.location.href = suggestion.url;
+        }).on('keyup', function (e) {
+            // on enter go to the first selection
+            if (e.which === 13) {
+                $('.tt-selectable').first().click();
+            }
         });
-    $('#gsearch').bind('typeahead:open', function(ev, suggestion) {
-        $('#gsearch').addClass('search-box');
-    });
 </script>

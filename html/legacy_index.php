@@ -28,6 +28,10 @@ $msg_box = array();
 $init_modules = array('web', 'auth');
 require realpath(__DIR__ . '/..') . '/includes/init.php';
 
+if (!Auth::check()) {
+    die('Unauthorized');
+}
+
 set_debug(str_contains($_SERVER['REQUEST_URI'], 'debug'));
 
 LibreNMS\Plugins::start();
@@ -76,6 +80,7 @@ if (empty($config['favicon'])) {
   <link rel="manifest" href="images/manifest.json">
   <link rel="mask-icon" href="images/safari-pinned-tab.svg" color="#5bbad5">
   <link rel="shortcut icon" href="images/favicon.ico">
+  <meta name="csrf-token" content="<?php echo csrf_token(); ?>">
   <meta name="msapplication-config" content="images/browserconfig.xml">
   <meta name="theme-color" content="#ffffff">
 <?php
@@ -97,11 +102,12 @@ if (empty($config['favicon'])) {
   <link href="css/leaflet.css" rel="stylesheet" type="text/css" />
   <link href="css/MarkerCluster.css" rel="stylesheet" type="text/css" />
   <link href="css/MarkerCluster.Default.css" rel="stylesheet" type="text/css" />
+  <link href="css/L.Control.Locate.min.css" rel="stylesheet" type="text/css" />
   <link href="css/leaflet.awesome-markers.css" rel="stylesheet" type="text/css" />
   <link href="css/select2.min.css" rel="stylesheet" type="text/css" />
   <link href="css/select2-bootstrap.min.css" rel="stylesheet" type="text/css" />
   <link href="css/query-builder.default.min.css" rel="stylesheet" type="text/css" />
-  <link href="<?php echo($config['stylesheet']);  ?>?ver=291727421" rel="stylesheet" type="text/css" />
+  <link href="<?php echo($config['stylesheet']);  ?>?ver=20190123" rel="stylesheet" type="text/css" />
   <link href="css/<?php echo $config['site_style']; ?>.css?ver=632417642" rel="stylesheet" type="text/css" />
 <?php
 
@@ -110,6 +116,7 @@ foreach ((array)$config['webui']['custom_css'] as $custom_css) {
 }
 
 ?>
+  <script src="js/polyfill.min.js"></script>
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/bootstrap-hover-dropdown.min.js"></script>
@@ -135,7 +142,7 @@ foreach ((array)$config['webui']['custom_css'] as $custom_css) {
     }
     ?>
   <script src="js/select2.min.js"></script>
-  <script src="js/librenms.js?ver=20181028"></script>
+  <script src="js/librenms.js?ver=20190123"></script>
   <script type="text/javascript">
 
     <!-- Begin
@@ -146,6 +153,12 @@ foreach ((array)$config['webui']['custom_css'] as $custom_css) {
       eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=1,location=0,statusbar=0,menubar=0,resizable=1,width=550,height=600');");
     }
     // End -->
+
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
   </script>
   <script type="text/javascript" src="js/overlib_mini.js"></script>
   <script type="text/javascript" src="js/toastr.min.js"></script>
@@ -160,7 +173,7 @@ if (empty($_SESSION['screen_width']) && empty($_SESSION['screen_height'])) {
 
 if ((isset($vars['bare']) && $vars['bare'] != "yes") || !isset($vars['bare'])) {
     if (Auth::check()) {
-        require 'includes/print-menubar.php';
+        require 'includes/html/print-menubar.php';
     }
 } else {
     echo "<style>body { padding-top: 0px !important;
@@ -182,15 +195,15 @@ if (isset($devel) || isset($vars['devel'])) {
     echo("</pre>");
 }
 
-if (isset($vars['page']) && !strstr("..", $vars['page']) &&  is_file("pages/" . $vars['page'] . ".inc.php")) {
-    require "pages/" . $vars['page'] . ".inc.php";
+$vars['page'] = basename($vars['page'] ?? '');
+if ($vars['page'] && is_file("includes/html/pages/" . $vars['page'] . ".inc.php")) {
+    require "includes/html/pages/" . $vars['page'] . ".inc.php";
+} elseif (Config::has('front_page') && is_file('includes/html/' . Config::get('front_page'))) {
+    require 'includes/html/' . Config::get('front_page');
 } else {
-    if (isset($config['front_page']) && is_file($config['front_page'])) {
-        require $config['front_page'];
-    } else {
-        require 'pages/front/default.php';
-    }
+    require 'includes/html/pages/front/default.php';
 }
+
 ?>
     </div>
   </div>

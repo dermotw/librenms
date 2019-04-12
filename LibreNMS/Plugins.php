@@ -27,6 +27,7 @@
 namespace LibreNMS;
 
 use App\Models\Plugin;
+use Log;
 
 /**
  * Handles loading of plugins
@@ -100,6 +101,7 @@ class Plugins
      */
     public static function load($file, $pluginName)
     {
+        chdir(Config::get('install_dir') . '/html');
         $plugin = self::getInstance($file, $pluginName);
 
         $class = get_class($plugin);
@@ -110,6 +112,8 @@ class Plugins
                 self::$plugins[$hookName][] = $class;
             }
         }
+
+        chdir(Config::get('install_dir'));
 
         return $plugin;
     }
@@ -172,19 +176,23 @@ class Plugins
      */
     public static function call($hook, $params = false)
     {
+        chdir(Config::get('install_dir') . '/html');
         self::start();
 
-        if (empty(self::$plugins[$hook])) {
-            return;
-        }
-
-        foreach (self::$plugins[$hook] as $name) {
-            if (!is_array($params)) {
-                @call_user_func(array($name, $hook));
-            } else {
-                @call_user_func_array(array($name, $hook), $params);
+        if (!empty(self::$plugins[$hook])) {
+            foreach (self::$plugins[$hook] as $name) {
+                try {
+                    if (!is_array($params)) {
+                        @call_user_func([$name, $hook]);
+                    } else {
+                        @call_user_func_array([$name, $hook], $params);
+                    }
+                } catch (\Exception $e) {
+                    Log::error($e);
+                }
             }
         }
+        chdir(Config::get('install_dir'));
     }
 
     /**

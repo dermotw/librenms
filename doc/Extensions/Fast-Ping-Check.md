@@ -18,16 +18,16 @@ to run ping checks as quickly as possible without increasing snmp load on your d
 ### Setting the ping check to 1 minute
 
 1. Change the ping_rrd_step setting in config.php
-    ```php
+    ```
     $config['ping_rrd_step'] = 60;
     ```
 
 2. Update the rrd files to change the step (step is hardcoded at file creation in rrd files)
-    ```bash
+    ```
     ./scripts/rrdstep.php -h all
     ```
 
-3. Add the following line to /etc/cron.d/librenms.nonroot.cron to allow 1 minute ping checks
+3. Add the following line to /etc/cron.d/librenms to allow 1 minute ping checks
 
 ```
 *    *    * * *   librenms    /opt/librenms/ping.php >> /dev/null 2>&1
@@ -41,12 +41,12 @@ We add two entries, but add a delay before one.
 >Alerts are only run every minute, so you will have to modify them as well. Remove the original alerts.php entry.
 
 1. Set ping_rrd_step
-    ```php
+    ```
    $config['ping_rrd_step'] = 30;
    ```
    
 2. Update the rrd files
-    ```bash
+    ```
     ./scripts/rrdstep.php -h all
     ```
 

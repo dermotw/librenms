@@ -56,7 +56,7 @@ class Port extends BaseModel
      */
     public function getShortLabel()
     {
-        return Rewrite::shortenIfName(Rewrite::normalizeIfName($this->getLabel()));
+        return Rewrite::shortenIfName(Rewrite::normalizeIfName($this->ifName ?: $this->ifDescr));
     }
 
     /**
@@ -151,6 +151,15 @@ class Port extends BaseModel
      * @param Builder $query
      * @return Builder
      */
+    public function scopeIsShutdown($query)
+    {
+        return $query->where('ifAdminStatus', 'down');
+    }
+
+    /**
+     * @param Builder $query
+     * @return Builder
+     */
     public function scopeIsIgnored($query)
     {
         return $query->where([
@@ -200,6 +209,11 @@ class Port extends BaseModel
     public function events()
     {
         return $this->morphMany(Eventlog::class, 'events', 'type', 'reference');
+    }
+
+    public function fdbEntries()
+    {
+        return $this->hasMany('App\Models\PortsFdb', 'port_id', 'port_id');
     }
 
     public function users()
