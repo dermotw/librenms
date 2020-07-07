@@ -30,7 +30,7 @@
 use LibreNMS\Authentication\LegacyAuth;
 use LibreNMS\Config;
 
-global $config, $vars, $console_color;
+global $vars, $console_color;
 
 error_reporting(E_ERROR|E_PARSE|E_CORE_ERROR|E_COMPILE_ERROR);
 ini_set('display_errors', 1);
@@ -57,22 +57,17 @@ if (!function_exists('module_selected')) {
 require_once $install_dir . '/includes/common.php';
 require_once $install_dir . '/includes/dbFacile.php';
 require_once $install_dir . '/includes/rrdtool.inc.php';
-require_once $install_dir . '/includes/influxdb.inc.php';
-require_once $install_dir . '/includes/prometheus.inc.php';
-require_once $install_dir . '/includes/opentsdb.inc.php';
-require_once $install_dir . '/includes/graphite.inc.php';
 require_once $install_dir . '/includes/datastore.inc.php';
 require_once $install_dir . '/includes/billing.php';
 require_once $install_dir . '/includes/syslog.php';
 if (module_selected('mocksnmp', $init_modules)) {
     require_once $install_dir . '/tests/mocks/mock.snmp.inc.php';
-} else {
+} elseif (!in_array($install_dir . '/tests/mocks/mock.snmp.inc.php', get_included_files())) {
     require_once $install_dir . '/includes/snmp.inc.php';
 }
 require_once $install_dir . '/includes/services.inc.php';
 require_once $install_dir . '/includes/functions.php';
 require_once $install_dir . '/includes/rewrites.php';
-require_once $install_dir . '/includes/device-groups.inc.php';
 
 if (module_selected('web', $init_modules)) {
     require_once $install_dir . '/includes/html/functions.inc.php';
@@ -87,12 +82,12 @@ if (module_selected('polling', $init_modules)) {
 }
 
 if (module_selected('alerts', $init_modules)) {
-    require_once $install_dir . '/includes/alerts.inc.php';
+    require_once $install_dir . '/LibreNMS/Alert/RunAlerts.php';
 }
 
 // Boot Laravel
-if (module_selected('auth', $init_modules)) {
-    \LibreNMS\Util\Laravel::bootWeb();
+if (module_selected('web', $init_modules)) {
+    \LibreNMS\Util\Laravel::bootWeb(module_selected('auth', $init_modules));
 } else {
     \LibreNMS\Util\Laravel::bootCli();
 }
@@ -127,8 +122,8 @@ if (!Config::has('install_dir')) {
 ini_set('display_errors', $display_bak);
 
 
-if (isset($config['php_memory_limit']) && is_numeric($config['php_memory_limit']) && $config['php_memory_limit'] > 128) {
-    ini_set('memory_limit', $config['php_memory_limit'].'M');
+if (is_numeric(Config::get('php_memory_limit')) && Config::get('php_memory_limit') > 128) {
+    ini_set('memory_limit', Config::get('php_memory_limit') . 'M');
 }
 
 try {
@@ -139,18 +134,14 @@ try {
     exit();
 }
 
-if (module_selected('discovery', $init_modules) && !update_os_cache()) {
-    // load_all_os() is called by update_os_cache() if updated, no need to call twice
-    load_all_os();
+if (module_selected('discovery', $init_modules) && !\LibreNMS\Util\OS::updateCache(false)) {
+    // OS::loadAllDefinitions() is called by update_os_cache() if updated, no need to call twice
+    \LibreNMS\Util\OS::loadAllDefinitions(false, true);
 } elseif (module_selected('web', $init_modules)) {
-    load_all_os(!module_selected('nodb', $init_modules));
+    \LibreNMS\Util\OS::loadAllDefinitions(!module_selected('nodb', $init_modules), true);
 }
 
 if (module_selected('web', $init_modules)) {
-    umask(0002);
-    if (!isset($config['title_image'])) {
-        $config['title_image'] = 'images/librenms_logo_'.$config['site_style'].'.svg';
-    }
     require $install_dir . '/includes/html/vars.inc.php';
 }
 

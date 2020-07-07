@@ -12,9 +12,11 @@
  * the source code distribution for details.
  */
 
-//Don't know where this should come from, but it is used later, so I just define it here.
-use LibreNMS\Authentication\LegacyAuth;
+use LibreNMS\Config;
 
+$highlight_node = $vars['highlight_node'] | 0;
+
+//Don't know where this should come from, but it is used later, so I just define it here.
 $row_colour="#ffffff";
 
 $sql_array= array();
@@ -27,10 +29,11 @@ if (!empty($device['hostname'])) {
     $sql = ' ';
 }
 
-if (!LegacyAuth::user()->hasGlobalRead()) {
-    $join_sql    .= ' LEFT JOIN `devices_perms` AS `DP` ON `D1`.`device_id` = `DP`.`device_id`';
-    $sql  .= ' AND `DP`.`user_id`=?';
-    $sql_array[] = LegacyAuth::id();
+if (!Auth::user()->hasGlobalRead()) {
+    $device_ids = Permissions::devicesForUser()->toArray() ?: [0];
+    $sql .= " AND `D1`.`device_id` IN " .dbGenPlaceholders(count($device_ids));
+    $sql .= " AND `D2`.`device_id` IN " .dbGenPlaceholders(count($device_ids));
+    $sql_array = array_merge($sql_array, $device_ids, $device_ids);
 }
 
 $devices_by_id = array();
@@ -48,7 +51,7 @@ if (is_numeric($vars['group'])) {
     $sql_array[] = $vars['group'];
 }
 
-if (in_array('mac', $config['network_map_items'])) {
+if (in_array('mac', Config::get('network_map_items'))) {
     $ports = dbFetchRows("SELECT
                              `D1`.`status` AS `local_status`,
                              `D1`.`device_id` AS `local_device_id`,
@@ -97,7 +100,7 @@ if (in_array('mac', $config['network_map_items'])) {
                      ", $sql_array);
 }
 
-if (in_array('xdp', $config['network_map_items'])) {
+if (in_array('xdp', Config::get('network_map_items'))) {
     $devices = dbFetchRows("SELECT
                              `D1`.`status` AS `local_status`,
                              `D1`.`device_id` AS `local_device_id`,
@@ -151,35 +154,44 @@ $list = array_merge($ports, $devices);
 $node_disabled_style = array(
     'color' => array(
         'highlight' => array(
-            'background' => $config['network_map_legend']['di.node'],
+            'background' => Config::get('network_map_legend.di.node'),
         ),
-        'border' => $config['network_map_legend']['di.border'],
-        'background' => $config['network_map_legend']['di.node'],
+        'border' => Config::get('network_map_legend.di.border'),
+        'background' => Config::get('network_map_legend.di.node'),
     ),
 );
 $node_down_style = array(
     'color' => array(
         'highlight' => array(
-            'background' => $config['network_map_legend']['dn.node'],
-            'border' => $config['network_map_legend']['dn.border'],
+            'background' => Config::get('network_map_legend.dn.node'),
+            'border' => Config::get('network_map_legend.dn.border'),
         ),
-        'border' => $config['network_map_legend']['dn.border'],
-        'background' => $config['network_map_legend']['dn.node'],
+        'border' => Config::get('network_map_legend.dn.border'),
+        'background' => Config::get('network_map_legend.dn.node'),
     ),
+);
+$node_highlight_style = array(
+    'color' => array(
+        'highlight' => array(
+            'border' => Config::get('network_map_legend.highlight.border'),
+        ),
+        'border' => Config::get('network_map_legend.highlight.border'),
+    ),
+    'borderWidth' => Config::get('network_map_legend.highlight.borderWidth'),
 );
 $edge_disabled_style = array(
     'dashes' => array(8,12),
     'color' => array(
-        'color' => $config['network_map_legend']['di.edge'],
-        'highlight' => $config['network_map_legend']['di.edge'],
+        'color' => Config::get('network_map_legend.di.edge'),
+        'highlight' => Config::get('network_map_legend.di.edge'),
     ),
 );
 $edge_down_style = array(
     'dashes' => array(8,12),
     'color' => array(
-        'border' => $config['network_map_legend']['dn.border'],
-        'highlight' => $config['network_map_legend']['dn.edge'],
-        'color' => $config['network_map_legend']['dn.edge'],
+        'border' => Config::get('network_map_legend.dn.border'),
+        'highlight' => Config::get('network_map_legend.dn.edge'),
+        'color' => Config::get('network_map_legend.dn.edge'),
     ),
 );
 
@@ -228,6 +240,10 @@ foreach ($list as $items) {
         } elseif ($items['local_status'] == '0') {
             $devices_by_id[$local_device_id] = array_merge($devices_by_id[$local_device_id], $node_down_style);
         }
+
+        if ((empty($device['hostname'])) && ($local_device_id == $highlight_node)) {
+            $devices_by_id[$local_device_id] = array_merge($devices_by_id[$local_device_id], $node_highlight_style);
+        }
     }
 
     $remote_device_id = $items['remote_device_id'];
@@ -238,6 +254,10 @@ foreach ($list as $items) {
             $devices_by_id[$remote_device_id] = array_merge($devices_by_id[$remote_device_id], $node_disabled_style);
         } elseif ($items['remote_status'] == '0') {
             $devices_by_id[$remote_device_id] = array_merge($devices_by_id[$remote_device_id], $node_down_style);
+        }
+
+        if ((empty($device['hostname'])) && ($remote_device_id == $highlight_node)) {
+            $devices_by_id[$remote_device_id] = array_merge($devices_by_id[$remote_device_id], $node_highlight_style);
         }
     }
 
@@ -258,8 +278,16 @@ foreach ($list as $items) {
     if ($link_used > 100) {
         $link_used = 100;
     }
-
-    $link_style = array('color' => array('border' => $config['network_map_legend'][$link_used], 'highlight' => $config['network_map_legend'][$link_used], 'color' => $config['network_map_legend'][$link_used]));
+    if (is_nan($link_used)) {
+        $link_used = 0;
+    }
+    $link_style = [
+        'color' => [
+            'border' => Config::get("network_map_legend.$link_used"),
+            'highlight' => Config::get("network_map_legend.$link_used"),
+            'color' => Config::get("network_map_legend.$link_used")
+        ]
+    ];
 
 
     if (($items['remote_ifoperstatus'] == 'down') || ($items['local_ifoperstatus'] == 'down')) {
@@ -278,11 +306,13 @@ foreach ($list as $items) {
     $device_id1 = $items['local_device_id'].':'.$items['remote_device_id'];
     $device_id2 = $items['remote_device_id'].':'.$items['local_device_id'];
 
-    // Ensure only one link exists between any two ports, or any two devices.
+    // If mac is choosen to graph, ensure only one link exists between any two ports, or any two devices.
+    // else ensure only one link exists between any two ports
     if (!array_key_exists($link_id1, $link_assoc_seen) &&
         !array_key_exists($link_id2, $link_assoc_seen) &&
-        !array_key_exists($device_id1, $device_assoc_seen) &&
-        !array_key_exists($device_id2, $device_assoc_seen)) {
+        (!in_array('mac', Config::get('network_map_items')) ||
+        (!array_key_exists($device_id1, $device_assoc_seen) &&
+        !array_key_exists($device_id2, $device_assoc_seen)))) {
         $local_port = cleanPort($local_port);
         $remote_port = cleanPort($remote_port);
         $links[] = array_merge(
@@ -290,7 +320,7 @@ foreach ($list as $items) {
                 'from'=>$items['local_device_id'],
                 'to'=>$items['remote_device_id'],
                 'label'=>shorten_interface_type($local_port['ifName']) . ' > ' . shorten_interface_type($remote_port['ifName']),
-                'title'=>generate_port_link($local_port, "<img src='graph.php?type=port_bits&amp;id=".$items['local_port_id']."&amp;from=".$config['time']['day']."&amp;to=".$config['time']['now']."&amp;width=100&amp;height=20&amp;legend=no&amp;bg=".str_replace("#", "", $row_colour)."'>\n", '', 0, 1),
+                'title' => generate_port_link($local_port, "<img src='graph.php?type=port_bits&amp;id=" . $items['local_port_id'] . "&amp;from=" . Config::get('time.day') . "&amp;to=" . Config::get('time.now') . "&amp;width=100&amp;height=20&amp;legend=no&amp;bg=" . str_replace("#", "", $row_colour) . "'>\n", '', 0, 1),
                 'width'=>$width,
             ),
             $link_style
@@ -305,26 +335,40 @@ foreach ($list as $items) {
 $nodes = json_encode(array_values($devices_by_id));
 $edges = json_encode($links);
 
-if (count($devices_by_id) > 1 && count($links) > 0) {
-?>
+array_multisort(array_column($devices_by_id, 'label'), SORT_ASC, $devices_by_id);
 
+if (count($devices_by_id) > 1 && count($links) > 0) {
+    ?>
+
+<form name="printmapform" method="get" action="" class="form-horizontal" role="form">
+    <?php if (empty($device['hostname'])) { ?>
+<div class="pull-right">
+<select name="highlight_node" id="highlight_node" class="input-sm" onChange="highlightNode()";>
+<option value="0">None</option>
+        <?php foreach ($devices_by_id as $dev) { ?>
+<option value="<?=$dev['id']?>"><?=$dev['label']?></option>
+        <?php } ?>
+</select>
+</div>
+    <?php } ?>
 <div id="visualization"></div>
+</form>
 <script src="js/vis.min.js"></script>
 <script type="text/javascript">
 var height = $(window).height() - 100;
 $('#visualization').height(height + 'px');
     // create an array with nodes
     var nodes =
-<?php
-echo $nodes;
-?>
+    <?php
+    echo $nodes;
+    ?>
     ;
 
     // create an array with edges
     var edges =
-<?php
-echo $edges;
-?>
+    <?php
+    echo $edges;
+    ?>
     ;
 
     // create a network
@@ -334,16 +378,23 @@ echo $edges;
         edges: edges,
         stabilize: true
     };
-    var options =  <?php echo $config['network_map_vis_options']; ?>;
-    var network = new vis.Network(container, data, options);
+    var options =  <?php echo Config::get('network_map_vis_options'); ?>;
+var network = new vis.Network(container, data, options);
     network.on('click', function (properties) {
         if (properties.nodes > 0) {
             window.location.href = "device/device="+properties.nodes+"/tab=neighbours/selection=map/"
         }
     });
+
+function highlightNode(e) {
+    highlight_node = document.getElementById("highlight_node").value;
+    window.location.pathname = 'map/highlight_node=' + highlight_node;
+}
+
+$('#highlight_node option[value="<?=$highlight_node?>"]').prop('selected', true);
 </script>
 
-<?php
+    <?php
 } else {
     print_message("No map to display, this may be because you aren't running autodiscovery or no devices are linked by mac address.");
 }

@@ -28,7 +28,7 @@ if ($stat == 'pkts') {
     } elseif ($sort == 'out') {
         $sort = 'cipMacHCSwitchedPkts_output_rate';
     } else {
-        $sort = 'bps';
+        $sort = 'bps_in';
     }
 } elseif ($stat == 'bits') {
     $units      = 'bps';
@@ -40,7 +40,7 @@ if ($stat == 'pkts') {
     } elseif ($sort == 'out') {
         $sort = 'cipMacHCSwitchedBytes_output_rate';
     } else {
-        $sort = 'bps';
+        $sort = 'bps_in';
     }
 }//end if
 
@@ -90,11 +90,11 @@ foreach ($accs as $acc) {
         }//end if
 
         $this_id = str_replace('.', '', $acc['mac']);
-        if (!$config['graph_colours'][$colours][$iter]) {
+        if (!\LibreNMS\Config::get("graph_colours.$colours.$iter")) {
             $iter = 0;
         }
 
-        $colour       = $config['graph_colours'][$colours][$iter];
+        $colour = \LibreNMS\Config::get("graph_colours.$colours.$iter");
         $descr        = rrdtool_escape($name, 36);
         $rrd_options .= ' DEF:in'.$this_id."=$this_rrd:".$prefix.'IN:AVERAGE ';
         $rrd_options .= ' DEF:out'.$this_id."temp=$this_rrd:".$prefix.'OUT:AVERAGE ';
@@ -107,10 +107,10 @@ foreach ($accs as $acc) {
         $rrd_options .= ' VDEF:tot'.$this_id.'=octets'.$this_id.',TOTAL';
         $rrd_options .= ' AREA:inB'.$this_id.'#'.$colour.":'".$descr."':STACK";
         if ($rrd_optionsb) {
-            $stack = 'STACK';
+            $stack = ':STACK';
         }
 
-        $rrd_optionsb .= ' AREA:outB'.$this_id.'#'.$colour."::$stack";
+        $rrd_optionsb .= ' AREA:outB'.$this_id.'#'.$colour.":''$stack";
         $rrd_options  .= ' GPRINT:inB'.$this_id.":LAST:%6.2lf%s$units";
         $rrd_options  .= ' GPRINT:inB'.$this_id.":MAX:%6.2lf%s$units";
         $rrd_options  .= ' GPRINT:totin'.$this_id.":%6.2lf%s$unit";

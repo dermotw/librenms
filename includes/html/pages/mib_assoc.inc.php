@@ -13,8 +13,8 @@
  * the source code distribution for details.
  */
 
-if (is_module_enabled('poller', 'mib')) {
-?>
+if (\LibreNMS\Config::get("poller_modules.mib")) {
+    ?>
 
 <h4>MIB associations for all devices</h4>
 <div class="table-responsive">
@@ -48,7 +48,7 @@ if (is_module_enabled('poller', 'mib')) {
         }
     });
 </script>
-<?php
+    <?php
 } else {
     print_mib_poller_disabled();
 }

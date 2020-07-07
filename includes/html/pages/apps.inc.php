@@ -27,6 +27,18 @@ $graphs['memcached'] = array(
     'data',
     'items',
 );
+$graphs['redis'] = array(
+    'clients',
+    'objects',
+    'fragmentation',
+    'usage',
+    'defrag',
+    'keyspace',
+    'sync',
+    'commands',
+    'connections',
+    'net',
+);
 $graphs['nginx']     = array(
     'connections',
     'req',
@@ -44,6 +56,11 @@ $graphs['powerdns-recursor'] = array(
     'answers',
     'cache_performance',
     'outqueries'
+);
+$graphs['pureftpd'] = array(
+    'bitrate',
+    'connections',
+    'users'
 );
 $graphs['rrdcached'] = array(
     'queue_length',
@@ -107,6 +124,12 @@ $graphs['os-updates'] = array(
 );
 $graphs['dhcp-stats'] = array(
      'stats',
+     'pools_percent',
+     'pools_current',
+     'pools_max',
+     'networks_percent',
+     'networks_current',
+     'networks_max',
 );
 $graphs['fail2ban'] = array(
     'banned',
@@ -162,6 +185,16 @@ $graphs['nvidia'] = array(
     'sbecc',
     'dbecc',
 );
+$graphs['seafile'] = array(
+    'connected',
+    'enabled',
+    'libraries',
+    'trashed_libraries',
+    'size_consumption',
+    'groups',
+    'version',
+    'platform',
+);
 $graphs['squid'] = array(
     'memory',
     'clients',
@@ -215,6 +248,7 @@ $graphs['bind']      = array(
 );
 $graphs['smart'] = array(
     'id5',
+    'id9',
     'id10',
     'id173',
     'id183',
@@ -229,6 +263,26 @@ $graphs['smart'] = array(
     'id199',
     'id231',
     'id233',
+);
+$graphs['certificate'] = array(
+    'age',
+    'remaining_days',
+);
+$graphs['puppet-agent'] = array(
+    'last_run',
+    'changes',
+    'events',
+    'resources',
+    'time',
+);
+$graphs['mdadm'] = array(
+    'level',
+    'size',
+    'disc_count',
+    'hotspare_count',
+    'degraded',
+    'sync_speed',
+    'sync_completed',
 );
 $graphs['sdfsinfo'] = array(
     'volume',
@@ -277,7 +331,17 @@ $graphs['asterisk'] = array(
     'calls',
     'channels',
     'sip',
+    'iax2',
 );
+$graphs['mailcow-postfix'] = array(
+    'emails',
+    'traffic',
+    'domains',
+);
+$graphs['backupninja'] = array(
+    'backupninja',
+);
+
 echo '<div class="panel panel-default">';
 echo '<div class="panel-heading">';
 echo "<span style='font-weight: bold;'>Apps</span> &#187; ";
@@ -287,22 +351,34 @@ $link_array = array(
     'device' => $device['device_id'],
     'tab'    => 'apps',
 );
-foreach ($app_list as $app) {
+
+
+$apps = \LibreNMS\Util\ObjectCache::applications()->flatten();
+foreach ($apps as $app) {
+    $app_state = \LibreNMS\Util\Html::appStateIcon($app->app_state);
+    if (!empty($app_state['icon'])) {
+        $app_state_info = "<font color=\"".$app_state['color']."\"><i title=\"".$app_state['hover_text']."\" class=\"fa ".$app_state['icon']." fa-fw fa-lg\" aria-hidden=\"true\"></i></font>";
+    } else {
+        $app_state_info = '';
+    }
+
     echo $sep;
-    if ($vars['app'] == $app['app_type']) {
+    if ($vars['app'] == $app->app_type) {
         echo "<span class='pagemenu-selected'>";
     }
-    echo generate_link(nicecase($app['app_type']), array('page' => 'apps', 'app' => $app['app_type']));
-    if ($vars['app'] == $app['app_type']) {
+    echo $app_state_info;
+    echo generate_link($app->displayName(), array('page' => 'apps', 'app' => $app->app_type));
+    if ($vars['app'] == $app->app_type) {
         echo '</span>';
     }
     $sep = ' | ';
 }
 echo '</div>';
 echo '<div class="panel-body">';
-if ($vars['app']) {
-    if (is_file('includes/html/pages/apps/'.mres($vars['app']).'.inc.php')) {
-        include 'includes/html/pages/apps/'.mres($vars['app']).'.inc.php';
+if (isset($vars['app'])) {
+    $app = basename($vars['app']);
+    if (is_file("includes/html/pages/apps/$app.inc.php")) {
+        include "includes/html/pages/apps/$app.inc.php";
     } else {
         include 'includes/html/pages/apps/default.inc.php';
     }

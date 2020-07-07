@@ -29,6 +29,7 @@ var grid = $("#inventory").bootgrid({
     templates: {
         header: "<div id=\"{{ctx.id}}\" class=\"{{css.header}}\"><div class=\"row\">"+
                 "<div class=\"col-sm-9 actionBar\"><span class=\"pull-left\"><form method=\"post\" action=\"\" class=\"form-inline\" role=\"form\">"+
+                "<?php echo addslashes(csrf_field()) ?>"+
                 "<div class=\"form-group\">"+
                 "<input type=\"text\" name=\"string\" id=\"string\" value=\"<?php echo $_POST['string']; ?>\" placeholder=\"Description\" class=\"form-control input-sm\" />"+
                 "</div>"+
@@ -75,7 +76,7 @@ foreach (dbFetchRows('SELECT * FROM `devices` ORDER BY `hostname`') as $data) {
                     if ($_POST['device_string']) {
                         echo $_POST['device_string'];
                     };
-?>
+                    ?>
                  "\" placeholder=\"Description\" class=\"form-control input-sm\"/>"+
                  "</div>"+
                  "<button type=\"submit\" class=\"btn btn-default input-sm\">Search</button>"+

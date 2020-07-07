@@ -110,7 +110,7 @@ if ($vars['view'] == 'macaccounting_pkts') {
 print_optionbar_end();
 
 echo '<table border="0" cellspacing="0" cellpadding="5" width="100%">';
-echo '<tr style="height: 30px"><th>Peer address</th><th>Type</th><th>Family</th><th>Remote AS</th><th>Peer description</th><th>State</th><th>Uptime</th></tr>';
+echo '<tr style="height: 30px"><th>Peer address</th><th>Type</th><th>Family</th><th>Remote AS</th><th>Peer description</th><th>State</th><th>Last error</th><th>Uptime</th></tr>';
 
 $i = '1';
 
@@ -118,18 +118,18 @@ foreach (dbFetchRows("SELECT * FROM `bgpPeers` WHERE `device_id` = ? $extra_sql 
     $has_macaccounting = dbFetchCell('SELECT COUNT(*) FROM `ipv4_mac` AS I, mac_accounting AS M WHERE I.ipv4_address = ? AND M.mac = I.mac_address', array($peer['bgpPeerIdentifier']));
     unset($bg_image);
     if (!is_integer($i / 2)) {
-        $bg_colour = $config['list_colour']['even'];
+        $bg_colour = \LibreNMS\Config::get('list_colour.even');
     } else {
-        $bg_colour = $config['list_colour']['odd'];
+        $bg_colour = \LibreNMS\Config::get('list_colour.odd');
     }
 
     unset($alert, $bg_image);
     unset($peerhost, $peername);
 
     if (!is_integer($i / 2)) {
-        $bg_colour = $config['list_colour']['odd'];
+        $bg_colour = \LibreNMS\Config::get('list_colour.odd');
     } else {
-        $bg_colour = $config['list_colour']['even'];
+        $bg_colour = \LibreNMS\Config::get('list_colour.even');
     }
 
     if ($peer['bgpPeerState'] == 'established') {
@@ -212,8 +212,8 @@ foreach (dbFetchRows("SELECT * FROM `bgpPeers` WHERE `device_id` = ? $extra_sql 
     $graph_array                = array();
     $graph_array['type']        = 'bgp_updates';
     $graph_array['id']          = $peer['bgpPeer_id'];
-    $graph_array['to']          = $config['time']['now'];
-    $graph_array['from']        = $config['time']['day'];
+    $graph_array['to'] = \LibreNMS\Config::get('time.now');
+    $graph_array['from'] = \LibreNMS\Config::get('time.day');
     $graph_array['height']      = '110';
     $graph_array['width']       = $width;
 
@@ -229,6 +229,12 @@ foreach (dbFetchRows("SELECT * FROM `bgpPeers` WHERE `device_id` = ? $extra_sql 
     $link = generate_url($link_array);
     $peeraddresslink = "<span class=list-large>".overlib_link($link, $peer['bgpPeerIdentifier'], generate_graph_tag($graph_array_zoom), null)."</span>";
 
+    if ($peer['bgpPeerLastErrorCode'] == 0 && $peer['bgpPeerLastErrorSubCode'] == 0) {
+        $last_error = $peer['bgpPeerLastErrorText'];
+    } else {
+        $last_error = describe_bgp_error_code($peer['bgpPeerLastErrorCode'], $peer['bgpPeerLastErrorSubCode'])."<br/>".$peer['bgpPeerLastErrorText'];
+    }
+
     echo '<tr bgcolor="'.$bg_colour.'"'.($peer['alert'] ? ' bordercolor="#cc0000"' : '').($peer['disabled'] ? ' bordercolor="#cccccc"' : '').'>
         ';
 
@@ -238,8 +244,9 @@ foreach (dbFetchRows("SELECT * FROM `bgpPeers` WHERE `device_id` = ? $extra_sql 
         <td style='font-size: 10px; font-weight: bold; line-height: 10px;'>".(isset($peer['afi']) ? $peer['afi'] : '').'</td>
         <td><strong>AS'.$peer['bgpPeerRemoteAs'].'</strong><br />'.$peer['astext']."</td>
         <td>".$peer['bgpPeerDescr']."</td>
-        <td><strong><span style='color: $admin_col;'>".$peer['bgpPeerAdminStatus']."<span><br /><span style='color: $col;'>".$peer['bgpPeerState'].'</span></strong></td>
-        <td>'.formatUptime($peer['bgpPeerFsmEstablishedTime'])."<br />
+        <td><strong><span style='color: $admin_col;'>".$peer['bgpPeerAdminStatus']."<span><br /><span style='color: $col;'>".$peer['bgpPeerState']."</span></strong></td>
+        <td>".$last_error."</td>
+        <td>".formatUptime($peer['bgpPeerFsmEstablishedTime'])."<br />
         Updates <i class='fa fa-arrow-down icon-theme' aria-hidden='true'></i> ".$peer['bgpPeerInUpdates']."
         <i class='fa fa-arrow-up icon-theme' aria-hidden='true'></i> ".$peer['bgpPeerOutUpdates'].'</td>
         </tr>
@@ -283,7 +290,7 @@ foreach (dbFetchRows("SELECT * FROM `bgpPeers` WHERE `device_id` = ? $extra_sql 
     if ($peer['graph']) {
         $graph_array['height'] = '100';
         $graph_array['width']  = '216';
-        $graph_array['to']     = $config['time']['now'];
+        $graph_array['to'] = \LibreNMS\Config::get('time.now');
         echo '<tr bgcolor="'.$bg_colour.'"'.($bg_image ? ' background="'.$bg_image.'"' : '').'"><td colspan="7">';
 
         include 'includes/html/print-graphrow.inc.php';

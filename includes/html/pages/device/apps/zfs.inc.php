@@ -1,7 +1,5 @@
 <?php
 
-global $config;
-
 $pools=get_zfs_pools($device['device_id']);
 
 $link_array = array(
@@ -52,7 +50,7 @@ if (!isset($vars['pool'])) {
 } else {
     $graphs = array(
         'zfs_pool_space'=>'Pool Space',
-        'zfs_pool_cap'=>'Pool Capcity',
+        'zfs_pool_cap'=>'Pool Capacity',
         'zfs_pool_frag'=>'Pool Fragmentation',
     );
 }
@@ -61,7 +59,7 @@ foreach ($graphs as $key => $text) {
     $graph_type            = $key;
     $graph_array['height'] = '100';
     $graph_array['width']  = '215';
-    $graph_array['to']     = $config['time']['now'];
+    $graph_array['to'] = \LibreNMS\Config::get('time.now');
     $graph_array['id']     = $app['app_id'];
     $graph_array['type']   = 'application_'.$key;
 

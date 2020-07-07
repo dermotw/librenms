@@ -37,30 +37,17 @@
  */
 namespace LibreNMS\Alert\Transport;
 
+use LibreNMS\Enum\AlertState;
 use LibreNMS\Alert\Transport;
 
 class Pushover extends Transport
 {
     public function deliverAlert($obj, $opts)
     {
-        if (empty($this->config)) {
-            return $this->deliverAlertOld($obj, $opts);
-        }
         $pushover_opts = $this->config;
         $pushover_opts['options'] = $this->parseUserOptions($this->config['options']);
 
         return $this->contactPushover($obj, $pushover_opts);
-    }
-
-    public function deliverAlertOld($obj, $opts)
-    {
-        foreach ($opts as $api) {
-            $response = $this->contactPushover($obj, $api);
-            if ($response !== true) {
-                return $response;
-            }
-        }
-        return true;
     }
 
     public function contactPushover($obj, $api)
@@ -83,7 +70,7 @@ class Pushover extends Transport
                 break;
         }
         switch ($obj['state']) {
-            case 0:
+            case AlertState::RECOVERED:
                 $data['priority'] = 0;
                 if (!empty($api['options']['sound_ok'])) {
                     $data['sound'] = $api['options']['sound_ok'];

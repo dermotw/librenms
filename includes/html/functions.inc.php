@@ -12,14 +12,14 @@
  * @copyright  (C) 2013 LibreNMS Group
  */
 
-use LibreNMS\Authentication\LegacyAuth;
 use LibreNMS\Config;
 
 /**
  * Compare $t with the value of $vars[$v], if that exists
  * @param string $v Name of the var to test
  * @param string $t Value to compare $vars[$v] to
- * @return boolean true, if values are the same, false if $vars[$v] is unset or values differ
+ * @return boolean true, if values are the same, false if $vars[$v]
+ * is unset or values differ
  */
 function var_eq($v, $t)
 {
@@ -134,11 +134,9 @@ function escape_quotes($text)
 
 function generate_overlib_content($graph_array, $text)
 {
-    global $config;
-
     $overlib_content = '<div class=overlib><span class=overlib-text>' . $text . '</span><br />';
     foreach (array('day', 'week', 'month', 'year') as $period) {
-        $graph_array['from'] = $config['time'][$period];
+        $graph_array['from'] = Config::get("time.$period");
         $overlib_content .= escape_quotes(generate_graph_tag($graph_array));
     }
 
@@ -162,38 +160,24 @@ function generate_minigraph_image($device, $start, $end, $type, $legend = 'no', 
 
 function generate_device_url($device, $vars = array())
 {
-    return generate_url(array('page' => 'device', 'device' => $device['device_id']), $vars);
-}//end generate_device_url()
-
+    return \LibreNMS\Util\Url::deviceUrl((int)$device['device_id'], $vars);
+}
 
 function generate_device_link($device, $text = null, $vars = array(), $start = 0, $end = 0, $escape_text = 1, $overlib = 1)
 {
-    global $config;
-
     if (!$start) {
-        $start = $config['time']['day'];
+        $start = Config::get('time.day');
     }
 
     if (!$end) {
-        $end = $config['time']['now'];
+        $end = Config::get('time.now');
     }
 
     $class = devclass($device);
-    if (!$text) {
-        $text = $device['hostname'];
-    }
 
     $text = format_hostname($device, $text);
 
-    if ($device['snmp_disable']) {
-        $graphs = $config['os']['ping']['over'];
-    } elseif (isset($config['os'][$device['os']]['over'])) {
-        $graphs = $config['os'][$device['os']]['over'];
-    } elseif (isset($device['os_group']) && isset($config['os'][$device['os_group']]['over'])) {
-        $graphs = $config['os'][$device['os_group']]['over'];
-    } else {
-        $graphs = $config['os']['default']['over'];
-    }
+    $graphs = \LibreNMS\Util\Graph::getOverviewGraphsForDevice(DeviceCache::get($device['device_id']));
 
     $url = generate_device_url($device, $vars);
 
@@ -204,7 +188,7 @@ function generate_device_link($device, $text = null, $vars = array(), $start = 0
     }
 
     if ($device['os']) {
-        $contents .= ' - ' . mres($config['os'][$device['os']]['text']);
+        $contents .= ' - ' . Config::getOsSetting($device['os'], 'text');
     }
 
     if ($device['version']) {
@@ -227,7 +211,7 @@ function generate_device_link($device, $text = null, $vars = array(), $start = 0
         $contents .= '<div class="overlib-box">';
         $contents .= '<span class="overlib-title">' . $graphhead . '</span><br />';
         $contents .= generate_minigraph_image($device, $start, $end, $graph);
-        $contents .= generate_minigraph_image($device, $config['time']['week'], $end, $graph);
+        $contents .= generate_minigraph_image($device, Config::get('time.week'), $end, $graph);
         $contents .= '</div>';
     }
 
@@ -254,51 +238,18 @@ function overlib_link($url, $text, $contents, $class = null)
     return \LibreNMS\Util\Url::overlibLink($url, $text, $contents, $class);
 }
 
-
-function generate_graph_popup($graph_array)
-{
-    global $config;
-
-    // Take $graph_array and print day,week,month,year graps in overlib, hovered over graph
-    $original_from = $graph_array['from'];
-
-    $graph = generate_graph_tag($graph_array);
-    $content = '<div class=list-large>' . $graph_array['popup_title'] . '</div>';
-    $content .= "<div style=\'width: 850px\'>";
-    $graph_array['legend'] = 'yes';
-    $graph_array['height'] = '100';
-    $graph_array['width'] = '340';
-    $graph_array['from'] = $config['time']['day'];
-    $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['week'];
-    $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['month'];
-    $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['year'];
-    $content .= generate_graph_tag($graph_array);
-    $content .= '</div>';
-
-    $graph_array['from'] = $original_from;
-
-    $graph_array['link'] = generate_url($graph_array, array('page' => 'graphs', 'height' => null, 'width' => null, 'bg' => null));
-
-    // $graph_array['link'] = "graphs/type=" . $graph_array['type'] . "/id=" . $graph_array['id'];
-    return overlib_link($graph_array['link'], $graph, $content, null);
-}//end generate_graph_popup()
-
-
 function print_graph_popup($graph_array)
 {
-    echo generate_graph_popup($graph_array);
-}//end print_graph_popup()
+    echo \LibreNMS\Util\Url::graphPopup($graph_array);
+}
 
 function bill_permitted($bill_id)
 {
-    if (LegacyAuth::user()->hasGlobalRead()) {
+    if (Auth::user()->hasGlobalRead()) {
         return true;
     }
 
-    return \Permissions::canAccessBill($bill_id, LegacyAuth::id());
+    return \Permissions::canAccessBill($bill_id, Auth::id());
 }
 
 function port_permitted($port_id, $device_id = null)
@@ -311,7 +262,7 @@ function port_permitted($port_id, $device_id = null)
         return true;
     }
 
-    return \Permissions::canAccessPort($port_id, LegacyAuth::id());
+    return \Permissions::canAccessPort($port_id, Auth::id());
 }
 
 function application_permitted($app_id, $device_id = null)
@@ -329,10 +280,10 @@ function application_permitted($app_id, $device_id = null)
 
 function device_permitted($device_id)
 {
-    if (LegacyAuth::user()->hasGlobalRead()) {
+    if (Auth::user() && Auth::user()->hasGlobalRead()) {
         return true;
     }
-    return \Permissions::canAccessDevice($device_id, LegacyAuth::id());
+    return \Permissions::canAccessDevice($device_id, Auth::id());
 }
 
 function print_graph_tag($args)
@@ -340,6 +291,33 @@ function print_graph_tag($args)
     echo generate_graph_tag($args);
 }//end print_graph_tag()
 
+function alert_layout($severity)
+{
+    switch ($severity) {
+        case 'critical':
+            $icon = 'exclamation';
+            $color = 'danger';
+            $background = 'danger';
+            break;
+        case 'warning':
+            $icon = 'warning';
+            $color = 'warning';
+            $background = 'warning';
+            break;
+        case 'ok':
+            $icon = 'check';
+            $color = 'success';
+            $background = 'success';
+            break;
+        default:
+            $icon = 'info';
+            $color = 'info';
+            $background = 'info';
+    }
+    return ['icon' => $icon,
+            'icon_color' => $color,
+            'background_color' => $background];
+}
 
 function generate_graph_tag($args)
 {
@@ -436,7 +414,7 @@ function print_percentage_bar($width, $height, $percent, $left_text, $left_colou
 
 function generate_entity_link($type, $entity, $text = null, $graph_type = null)
 {
-    global $config, $entity_cache;
+    global $entity_cache;
 
     if (is_numeric($entity)) {
         $entity = get_entity_by_id_cache($type, $entity);
@@ -462,11 +440,21 @@ function generate_entity_link($type, $entity, $text = null, $graph_type = null)
     return ($link);
 }//end generate_entity_link()
 
+/**
+ * Extract type and subtype from a complex graph type, also makes sure variables are file name safe.
+ * @param string $type
+ * @return array [type, subtype]
+ */
+function extract_graph_type($type): array
+{
+    preg_match('/^(?P<type>[A-Za-z0-9]+)_(?P<subtype>.+)/', $type, $graphtype);
+    $type = basename($graphtype['type']);
+    $subtype = basename($graphtype['subtype']);
+    return [$type, $subtype];
+}
 
 function generate_port_link($port, $text = null, $type = null, $overlib = 1, $single_graph = 0)
 {
-    global $config;
-
     $graph_array = array();
 
     if (!$text) {
@@ -497,16 +485,16 @@ function generate_port_link($port, $text = null, $type = null, $overlib = 1, $si
     $graph_array['legend'] = 'yes';
     $graph_array['height'] = '100';
     $graph_array['width'] = '340';
-    $graph_array['to'] = $config['time']['now'];
-    $graph_array['from'] = $config['time']['day'];
+    $graph_array['to'] = Config::get('time.now');
+    $graph_array['from'] = Config::get('time.day');
     $graph_array['id'] = $port['port_id'];
     $content .= generate_graph_tag($graph_array);
     if ($single_graph == 0) {
-        $graph_array['from'] = $config['time']['week'];
+        $graph_array['from'] = Config::get('time.week');
         $content .= generate_graph_tag($graph_array);
-        $graph_array['from'] = $config['time']['month'];
+        $graph_array['from'] = Config::get('time.month');
         $content .= generate_graph_tag($graph_array);
-        $graph_array['from'] = $config['time']['year'];
+        $graph_array['from'] = Config::get('time.year');
         $content .= generate_graph_tag($graph_array);
     }
 
@@ -580,7 +568,7 @@ function generate_sensor_url($sensor, $vars = array())
     return generate_url(array('page' => 'graphs', 'id' => $sensor['sensor_id'], 'type' => $sensor['graph_type'], 'from' => Config::get('time.day')), $vars);
 }//end generate_sensor_url()
 
- 
+
 function generate_port_url($port, $vars = array())
 {
     return generate_url(array('page' => 'device', 'device' => $port['device_id'], 'tab' => 'port', 'port' => $port['port_id']), $vars);
@@ -611,10 +599,9 @@ function generate_port_image($args)
 
 function generate_port_thumbnail($port)
 {
-    global $config;
     $port['graph_type'] = 'port_bits';
-    $port['from'] = $config['time']['day'];
-    $port['to'] = $config['time']['now'];
+    $port['from'] = Config::get('time.day');
+    $port['to'] = Config::get('time.now');
     $port['width'] = 150;
     $port['height'] = 21;
     return generate_port_image($port);
@@ -678,7 +665,7 @@ function devclass($device)
         $class = 'list-device';
     }
 
-    if (isset($device['ignore']) && $device['ignore'] == '1') {
+    if (isset($device['disable_notify']) && $device['disable_notify'] == '1') {
         $class = 'list-device-ignored';
         if (isset($device['status']) && $device['status'] == '1') {
             $class = 'list-device-ignored-up';
@@ -695,11 +682,11 @@ function devclass($device)
 
 function getlocations()
 {
-    if (LegacyAuth::user()->hasGlobalRead()) {
+    if (Auth::user()->hasGlobalRead()) {
         return dbFetchRows('SELECT id, location FROM locations ORDER BY location');
     }
 
-    return dbFetchRows('SELECT id, L.location FROM devices AS D, locations AS L, devices_perms AS P WHERE D.device_id = P.device_id AND P.user_id = ? AND D.location_id = L.id ORDER BY location', [LegacyAuth::id()]);
+    return dbFetchRows('SELECT id, L.location FROM devices AS D, locations AS L, devices_perms AS P WHERE D.device_id = P.device_id AND P.user_id = ? AND D.location_id = L.id ORDER BY location', [Auth::id()]);
 }
 
 
@@ -731,8 +718,6 @@ function foldersize($path)
 
 function generate_ap_link($args, $text = null, $type = null)
 {
-    global $config;
-
     $args = cleanPort($args);
     if (!$text) {
         $text = fixIfName($args['label']);
@@ -761,15 +746,15 @@ function generate_ap_link($args, $text = null, $type = null)
     $graph_array['legend'] = 'yes';
     $graph_array['height'] = '100';
     $graph_array['width'] = '340';
-    $graph_array['to'] = $config['time']['now'];
-    $graph_array['from'] = $config['time']['day'];
+    $graph_array['to'] = Config::get('time.now');
+    $graph_array['from'] = Config::get('time.day');
     $graph_array['id'] = $args['accesspoint_id'];
     $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['week'];
+    $graph_array['from'] = Config::get('time.week');
     $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['month'];
+    $graph_array['from'] = Config::get('time.month');
     $content .= generate_graph_tag($graph_array);
-    $graph_array['from'] = $config['time']['year'];
+    $graph_array['from'] = Config::get('time.year');
     $content .= generate_graph_tag($graph_array);
     $content .= '</div>';
 
@@ -787,20 +772,12 @@ function generate_ap_url($ap, $vars = array())
     return generate_url(array('page' => 'device', 'device' => $ap['device_id'], 'tab' => 'accesspoint', 'ap' => $ap['accesspoint_id']), $vars);
 }//end generate_ap_url()
 
-function report_this_text($message)
-{
-    global $config;
-    return $message . '\nPlease report this to the ' . $config['project_name'] . ' developers at ' . $config['project_issues'] . '\n';
-}//end report_this_text()
-
 
 // Find all the files in the given directory that match the pattern
 
 
 function get_matching_files($dir, $match = '/\.php$/')
 {
-    global $config;
-
     $list = array();
     if ($handle = opendir($dir)) {
         while (false !== ($file = readdir($handle))) {
@@ -917,55 +894,6 @@ function clean_bootgrid($string)
     return $output;
 }//end clean_bootgrid()
 
-
-function get_config_by_group($group)
-{
-    $items = array();
-    foreach (dbFetchRows("SELECT * FROM `config` WHERE `config_group` = ?", array($group)) as $config_item) {
-        $val = $config_item['config_value'];
-        if (filter_var($val, FILTER_VALIDATE_INT)) {
-            $val = (int)$val;
-        } elseif (filter_var($val, FILTER_VALIDATE_FLOAT)) {
-            $val = (float)$val;
-        } elseif (filter_var($val, FILTER_VALIDATE_BOOLEAN)) {
-            $val = (boolean)$val;
-        }
-
-        if ($val === true) {
-            $config_item += array('config_checked' => 'checked');
-        }
-
-        $items[$config_item['config_name']] = $config_item;
-    }
-
-    return $items;
-}//end get_config_by_group()
-
-
-function get_config_like_name($name)
-{
-    $items = array();
-    foreach (dbFetchRows("SELECT * FROM `config` WHERE `config_name` LIKE ?", array("%$name%")) as $config_item) {
-        $items[$config_item['config_id']] = $config_item;
-    }
-
-    return $items;
-}//end get_config_like_name()
-
-
-function get_config_by_name($name)
-{
-    $config_item = dbFetchRow('SELECT * FROM `config` WHERE `config_name` = ?', array($name));
-    return $config_item;
-}//end get_config_by_name()
-
-
-function set_config_name($name, $config_value)
-{
-    return dbUpdate(array('config_value' => $config_value), 'config', '`config_name`=?', array($name));
-}//end set_config_name()
-
-
 function get_url()
 {
     // http://stackoverflow.com/questions/2820723/how-to-get-base-url-with-php
@@ -1026,6 +954,7 @@ function alert_details($details)
             $fault_detail .= generate_sensor_link($tmp_alerts, $tmp_alerts['name']) . ';&nbsp; <br>' . $details;
             $fallback = false;
         }
+
         if ($tmp_alerts['bgpPeer_id']) {
             // If we have a bgpPeer_id, we format the data accordingly
             $fault_detail .= "BGP peer <a href='" .
@@ -1038,6 +967,7 @@ function alert_details($details)
             $fault_detail .= ", State " . $tmp_alerts['bgpPeerState'];
             $fallback = false;
         }
+
         if ($tmp_alerts['type'] && $tmp_alerts['label']) {
             if ($tmp_alerts['error'] == "") {
                 $fault_detail .= ' ' . $tmp_alerts['type'] . ' - ' . $tmp_alerts['label'] . ';&nbsp;';
@@ -1047,12 +977,29 @@ function alert_details($details)
             $fallback = false;
         }
 
+        if (in_array('app_id', array_keys($tmp_alerts))) {
+            $fault_detail .= "<a href='" . generate_url(array('page' => 'device',
+                                                              'device' => $tmp_alerts['device_id'],
+                                                              'tab' => 'apps',
+                                                              'app' => $tmp_alerts['app_type'])) . "'>";
+            $fault_detail .= $tmp_alerts['metric'];
+            $fault_detail .= "</a>";
+
+            $fault_detail .= " => ". $tmp_alerts['value'];
+            $fallback = false;
+        }
+
         if ($fallback === true) {
+            $fault_detail_data = [];
             foreach ($tmp_alerts as $k => $v) {
-                if (!empty($v) && $k != 'device_id' && (stristr($k, 'id') || stristr($k, 'desc') || stristr($k, 'msg')) && substr_count($k, '_') <= 1) {
-                    $fault_detail .= "$k => '$v', ";
+                if (in_array($k, ['device_id', 'sysObjectID', 'sysDescr', 'location_id'])) {
+                    continue;
+                }
+                if (!empty($v) && str_i_contains($k, ['id', 'desc', 'msg', 'last'])) {
+                    $fault_detail_data[] = "$k => '$v'";
                 }
             }
+            $fault_detail .= count($fault_detail_data) ? implode('<br>&nbsp;&nbsp;&nbsp', $fault_detail_data) : '';
 
             $fault_detail = rtrim($fault_detail, ', ');
         }
@@ -1078,95 +1025,6 @@ function dynamic_override_config($type, $name, $device)
     }
 }//end dynamic_override_config()
 
-function generate_dynamic_config_panel($title, $config_groups, $items = array(), $transport = '', $end_panel = true)
-{
-    $anchor = md5($title);
-    $output = '
-<div class="panel panel-default">
-    <div class="panel-heading">
-        <h4 class="panel-title">
-            <a data-toggle="collapse" data-parent="#accordion" href="#' . $anchor . '"><i class="fa fa-caret-down"></i> ' . $title . '</a>
-    ';
-    if (!empty($transport)) {
-        $output .= '<button name="test-alert" id="test-alert" type="button" data-transport="' . $transport . '" class="btn btn-primary btn-xs pull-right">Test transport</button>';
-    }
-    $output .= '
-        </h4>
-    </div>
-    <div id="' . $anchor . '" class="panel-collapse collapse">
-        <div class="panel-body">
-    ';
-
-    if (!empty($items)) {
-        foreach ($items as $item) {
-            $output .= '
-            <div class="form-group has-feedback ' . (isset($item['class']) ? $item['class'] : '') . '">
-                <label for="' . $item['name'] . '"" class="col-sm-4 control-label">' . $item['descr'] . ' </label>
-                <div data-toggle="tooltip" title="' . $config_groups[$item['name']]['config_descr'] . '" class="toolTip fa fa-fw fa-lg fa-question-circle"></div>
-                <div class="col-sm-4">
-            ';
-            if ($item['type'] == 'checkbox') {
-                $output .= '<input id="' . $item['name'] . '" type="checkbox" name="global-config-check" ' . $config_groups[$item['name']]['config_checked'] . ' data-on-text="Yes" data-off-text="No" data-size="small" data-config_id="' . $config_groups[$item['name']]['config_id'] . '">';
-            } elseif ($item['type'] == 'text') {
-                $pattern = isset($item['pattern']) ? ' pattern="' . $item['pattern'] . '"' : "";
-                $pattern .= isset($item['required']) && $item['required'] ? " required" : "";
-                $output .= '
-                <input id="' . $item['name'] . '" class="form-control validation" type="text" name="global-config-input" value="' . $config_groups[$item['name']]['config_value'] . '" data-config_id="' . $config_groups[$item['name']]['config_id'] . '"' . $pattern . '>
-                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
-                ';
-            } elseif ($item['type'] == 'password') {
-                $output .= '
-                <input id="' . $item['name'] . '" class="form-control" type="password" name="global-config-input" value="' . $config_groups[$item['name']]['config_value'] . '" data-config_id="' . $config_groups[$item['name']]['config_id'] . '">
-                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
-                ';
-            } elseif ($item['type'] == 'numeric') {
-                $output .= '
-                <input id="' . $item['name'] . '" class="form-control" onkeypress="return (event.charCode == 8 || event.charCode == 0) ? null : event.charCode >= 48 && event.charCode <= 57" type="text" name="global-config-input" value="' . $config_groups[$item['name']]['config_value'] . '" data-config_id="' . $config_groups[$item['name']]['config_id'] . '">
-                <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
-                ';
-            } elseif ($item['type'] == 'select') {
-                $output .= '
-                <select id="' . ($config_groups[$item['name']]['name'] ?: $item['name']) . '" class="form-control" name="global-config-select" data-config_id="' . $config_groups[$item['name']]['config_id'] . '">
-                ';
-                if (!empty($item['options'])) {
-                    foreach ($item['options'] as $option) {
-                        if (gettype($option) == 'string') {
-                            /* for backwards-compatibility */
-                            $tmp_opt = $option;
-                            $option = array(
-                                'value' => $tmp_opt,
-                                'description' => $tmp_opt,
-                            );
-                        }
-                        $output .= '<option value="' . $option['value'] . '"';
-                        if ($option['value'] == $config_groups[$item['name']]['config_value']) {
-                            $output .= ' selected';
-                        }
-                        $output .= '>' . $option['description'] . '</option>';
-                    }
-                }
-                $output .= '
-                </select>
-                <span class="form-control-feedback"><i class="fa" aria-hidden="true"></i></span>
-                ';
-            }
-            $output .= '
-                </div>
-            </div>
-            ';
-        }
-    }
-
-    if ($end_panel === true) {
-        $output .= '
-        </div>
-    </div>
-</div>
-        ';
-    }
-    return $output;
-}//end generate_dynamic_config_panel()
-
 /**
  * Return the rows from 'ports' for all ports of a certain type as parsed by port_descr_parser.
  * One or an array of strings can be provided as an argument; if an array is passed, all ports matching
@@ -1176,8 +1034,6 @@ function generate_dynamic_config_panel($title, $config_groups, $items = array(),
  */
 function get_ports_from_type($given_types)
 {
-    global $config;
-
     # Make the arg an array if it isn't, so subsequent steps only have to handle arrays.
     if (!is_array($given_types)) {
         $given_types = array($given_types);
@@ -1187,13 +1043,14 @@ function get_ports_from_type($given_types)
     #  be key/valued to some other string that's actually searched for in the DB. Merge or append the
     #  configured value if it's an array or a string. Or append the argument itself if there's no matching
     #  entry in config.
-    $search_types = array();
+    $search_types = [];
     foreach ($given_types as $type) {
-        if (isset($config[$type . '_descr']) === true) {
-            if (is_array($config[$type . '_descr']) === true) {
-                $search_types = array_merge($search_types, $config[$type . '_descr']);
+        if (Config::has($type . '_descr')) {
+            $type_descr = Config::get($type . '_descr');
+            if (is_array($type_descr)) {
+                $search_types = array_merge($search_types, $type_descr);
             } else {
-                $search_types[] = $config[$type . '_descr'];
+                $search_types[] = $type_descr;
             }
         } else {
             $search_types[] = $type;
@@ -1242,14 +1099,12 @@ function file_download($filename, $content)
 
 function get_rules_from_json()
 {
-    global $config;
-    return json_decode(file_get_contents($config['install_dir'] . '/misc/alert_rules.json'), true);
+    return json_decode(file_get_contents(Config::get('install_dir') . '/misc/alert_rules.json'), true);
 }
 
 function search_oxidized_config($search_in_conf_textbox)
 {
-    global $config;
-    $oxidized_search_url = $config['oxidized']['url'] . '/nodes/conf_search?format=json';
+    $oxidized_search_url = Config::get('oxidized.url') . '/nodes/conf_search?format=json';
     $postdata = http_build_query(
         array(
             'search_in_conf_textbox' => $search_in_conf_textbox,
@@ -1263,7 +1118,14 @@ function search_oxidized_config($search_in_conf_textbox)
         )
     );
     $context = stream_context_create($opts);
-    return json_decode(file_get_contents($oxidized_search_url, false, $context), true);
+
+    $nodes = json_decode(file_get_contents($oxidized_search_url, false, $context), true);
+    // Look up Oxidized node names to LibreNMS devices for a link
+    foreach ($nodes as &$n) {
+        $dev = device_by_name($n['node']);
+        $n['dev_id'] = $dev ? $dev['device_id'] : false;
+    }
+    return $nodes;
 }
 
 /**
@@ -1312,9 +1174,7 @@ function set_image_type()
 
 function get_image_type()
 {
-    global $config;
-
-    if ($config['webui']['graph_type'] === 'svg') {
+    if (Config::get('webui.graph_type') === 'svg') {
         return 'image/svg+xml';
     } else {
         return 'image/png';
@@ -1323,15 +1183,13 @@ function get_image_type()
 
 function get_oxidized_nodes_list()
 {
-    global $config;
-
     $context = stream_context_create(array(
         'http' => array(
             'header' => "Accept: application/json",
         )
     ));
 
-    $data = json_decode(file_get_contents($config['oxidized']['url'] . '/nodes?format=json', false, $context), true);
+    $data = json_decode(file_get_contents(Config::get('oxidized.url') . '/nodes?format=json', false, $context), true);
 
     foreach ($data as $object) {
         $device = device_by_name($object['name']);
@@ -1339,50 +1197,16 @@ function get_oxidized_nodes_list()
             //user cannot see this device, so let's skip it.
             continue;
         }
-        $fa_color = $object['status'] == 'success' ? 'success' : 'danger';
-        echo "
-        <tr>
-        <td>
-        " . generate_device_link($device);
-        if ($device['device_id'] == 0) {
-            echo "(device '" . $object['name'] . "' not in LibreNMS)";
-        }
-        echo "
-        </td>
-        <td>
-        " . $device['sysName'] . "
-        </td>
-        <td>
-        <i class='fa fa-square text-" . $fa_color . "'></i>
-        </td>
-        <td>
-        " . $object['time'] . "
-        </td>
-        <td>
-        " . $object['model'] . "
-        </td>
-        <td>
-        " . $object['group'] . "
-        </td>
-        <td>
-        ";
-        if (! $device['device_id'] == 0) {
-            echo "
-          <button class='btn btn-default btn-sm' name='btn-refresh-node-devId" . $device['device_id'] . "' id='btn-refresh-node-devId" . $device['device_id'] . "' onclick='refresh_oxidized_node(\"" . $device['hostname'] . "\")'>
-            <i class='fa fa-refresh'></i>
-          </button>
-          <a href='" . generate_url(array('page' => 'device', 'device' => $device['device_id'], 'tab' => 'showconfig')) . "'>
-            <i class='fa fa-align-justify fa-lg icon-theme'></i>
-          </a>
-            ";
-        } else {
-            echo "
-          <button class='btn btn-default btn-sm' disabled name='btn-refresh-node-devId" . $device['device_id'] . "' id='btn-refresh-node-devId" . $device['device_id'] . "'>
-            <i class='fa fa-refresh'></i>
-          </button>";
-        }
-        echo "
-        </td>
+
+        echo "<tr>
+        <td>" . $device['device_id'] . "</td>
+        <td>" . $object['name'] . "</td>
+        <td>" . $device['sysName'] . "</td>
+        <td>" . $object['status'] . "</td>
+        <td>" . $object['time'] . "</td>
+        <td>" . $object['model'] . "</td>
+        <td>" . $object['group'] . "</td>
+        <td></td>
         </tr>";
     }
 }
@@ -1444,30 +1268,39 @@ function get_postgres_databases($device_id)
 }
 
 /**
- * Get all disks (disk serial numbers) from the collected
+ * Get all application data from the collected
  * rrd files.
  *
  * @param array $device device for which we get the rrd's
  * @param int   $app_id application id on the device
- * @return array list of disks
+ * @param string  $category which category of graphs are searched
+ * @return array list of entry data
  */
-function get_disks_with_smart($device, $app_id)
+function get_arrays_with_application($device, $app_id, $app_name, $category = null)
 {
-    $disks = array();
+    $entries = array();
+    $separator = '-';
 
-    $pattern = sprintf('%s/%s-%s-%s-*.rrd', get_rrd_dir($device['hostname']), 'app', 'smart', $app_id);
+    if ($category) {
+        $pattern = sprintf('%s/%s-%s-%s-%s-*.rrd', get_rrd_dir($device['hostname']), 'app', $app_name, $app_id, $category);
+    } else {
+        $pattern = sprintf('%s/%s-%s-%s-*.rrd', get_rrd_dir($device['hostname']), 'app', $app_name, $app_id);
+    }
+
+    # app_name contains a separator character? consider it
+    $offset = substr_count($app_name, $separator);
 
     foreach (glob($pattern) as $rrd) {
         $filename = basename($rrd, '.rrd');
 
-        list(,,, $disk) = explode("-", $filename, 4);
+        $entry = explode($separator, $filename, 4 + $offset)[3 + $offset];
 
-        if ($disk) {
-            array_push($disks, $disk);
+        if ($entry) {
+            array_push($entries, $entry);
         }
     }
 
-    return $disks;
+    return $entries;
 }
 
 /**
@@ -1507,6 +1340,34 @@ function generate_stacked_graphs($transparency = '88')
     } else {
         return array('transparency' => '', 'stacked' => '-1');
     }
+}
+
+/**
+ * Parse AT time spec, does not handle the entire spec.
+ * @param string $time
+ * @return int
+ */
+function parse_at_time($time)
+{
+    if (is_numeric($time)) {
+        return $time < 0 ? time() + $time : intval($time);
+    }
+
+    if (preg_match('/^[+-]\d+[hdmy]$/', $time)) {
+        $units = [
+            'm' => 60,
+            'h' => 3600,
+            'd' => 86400,
+            'y' => 31557600,
+        ];
+        $value = substr($time, 1, -1);
+        $unit = substr($time, -1);
+
+        $offset = ($time[0] == '-' ? -1 : 1) * $units[$unit] * $value;
+        return time() + $offset;
+    }
+
+    return (int)strtotime($time);
 }
 
 /**
@@ -1583,92 +1444,164 @@ function get_device_name($device)
  * Returns state generic label from value with optional text
  */
 
-function get_state_label($state_value, $state_text_param = null)
+function get_state_label($sensor)
 {
-    switch ($state_value) {
+    $state_translation = dbFetchRow('SELECT * FROM state_translations as ST, sensors_to_state_indexes as SSI WHERE ST.state_index_id=SSI.state_index_id AND SSI.sensor_id = ? AND ST.state_value = ? ', array($sensor['sensor_id'], $sensor['sensor_current']));
+
+    switch ($state_translation['state_generic_value']) {
         case 0:  // OK
-            $state_text = (is_null($state_text_param) ? "OK": $state_text_param);
+            $state_text = $state_translation['state_descr'] ?: "OK";
             $state_label = "label-success";
             break;
         case 1:  // Warning
-            $state_text = (is_null($state_text_param) ? "Warning": $state_text_param);
+            $state_text = $state_translation['state_descr'] ?: "Warning";
             $state_label = "label-warning";
             break;
         case 2:  // Critical
-            $state_text = (is_null($state_text_param) ? "Critical": $state_text_param);
+            $state_text = $state_translation['state_descr'] ?: "Critical";
             $state_label = "label-danger";
             break;
-        case 3:// Unknown
+        case 3:  // Unknown
         default:
-            $state_text = (is_null($state_text_param) ? "Unknown": $state_text_param);
+            $state_text = $state_translation['state_descr'] ?: "Unknown";
             $state_label = "label-default";
     }
-    $state = "<span class='label $state_label'>$state_text</span>";
-    return $state;
+    return "<span class='label $state_label'>$state_text</span>";
 }
 
 /**
- * Get state label color
+ * Get sensor label and state color
+ * @param array $sensor
+ * @param string $type sensors or wireless
+ * @return string
  */
-function get_sensor_label_color($sensor)
+function get_sensor_label_color($sensor, $type = 'sensors')
 {
-    $current_label_color = "label-success";
+    $label_style = "label-success";
     if (is_null($sensor)) {
         return "label-unknown";
     }
     if (!is_null($sensor['sensor_limit_warn']) && $sensor['sensor_current'] > $sensor['sensor_limit_warn']) {
-        $current_label_color = "label-warning";
+        $label_style = "label-warning";
     }
     if (!is_null($sensor['sensor_limit_low_warn']) && $sensor['sensor_current'] < $sensor['sensor_limit_low_warn']) {
-        $current_label_color = "label-warning";
+        $label_style = "label-warning";
     }
     if (!is_null($sensor['sensor_limit']) && $sensor['sensor_current'] > $sensor['sensor_limit']) {
-        $current_label_color = "label-danger";
+        $label_style = "label-danger";
     }
     if (!is_null($sensor['sensor_limit_low']) && $sensor['sensor_current'] < $sensor['sensor_limit_low']) {
-        $current_label_color = "label-danger";
+        $label_style = "label-danger";
     }
-
-    return $current_label_color;
+    $unit = __("$type.{$sensor['sensor_class']}.unit");
+    if ($sensor['sensor_class'] == 'runtime') {
+        $sensor['sensor_current'] = formatUptime($sensor['sensor_current'] * 60, 'short');
+        return "<span class='label $label_style'>".trim($sensor['sensor_current'])."</span>";
+    }
+    if ($sensor['sensor_class'] == 'frequency' && $sensor['sensor_type'] == 'openwrt') {
+        return "<span class='label $label_style'>".trim($sensor['sensor_current'])." ".$unit."</span>";
+    }
+    return "<span class='label $label_style'>".trim(format_si($sensor['sensor_current']).$unit)."</span>";
 }
 
 /**
- * Get the unit for the sensor class given as parameter
- * @param $class
- * @return string The unit
+ * @params int unix time
+ * @params int seconds
+ * @return int
+ *
+ * Rounds down to the nearest interval.
+ *
+ * The first argument is required and it is the unix time being
+ * rounded down.
+ *
+ * The second value is the time interval. If not specified, it
+ * defaults to 300, or 5 minutes.
  */
-function get_unit_for_sensor_class($class)
+function lowest_time($time, $seconds = 300)
 {
-    $units_by_classes = array(
-        'ber'                  => '',
-        'charge'               => '%',
-        'chromatic_dispersion' => 'ps/nm',
-        'cooling'              => 'W',
-        'count'                => '',
-        'current'              => 'A',
-        'dbm'                  => 'dBm',
-        'delay'                => 's',
-        'eer'                  => '',
-        'fanspeed'             => 'rpm',
-        'frequency'            => 'Hz',
-        'humidity'             => '%',
-        'load'                 => '%',
-        'power'                => 'W',
-        'power_consumed'       => 'kWh',
-        'power_factor'         => '',
-        'pressure'             => 'kPa',
-        'quality_factor'       => 'dB',
-        'signal'               => 'dBm',
-        'snr'                  => 'dB',
-        'state'                => '',
-        'temperature'          => '&deg;C',
-        'voltage'              => 'V',
-        'waterflow'            => 'l/m',
-    );
+    return $time - ($time % $seconds);
+}
 
-    if (!array_key_exists($class, $units_by_classes)) {
-        return '';
+/**
+ * @params int
+ * @return string
+ *
+ * This returns the subpath for working with nfdump.
+ *
+ * 1 value is taken and that is a unix time stamp. It will be then be rounded
+ * off to the lowest five minutes earlier.
+ *
+ * The return string will be a path partial you can use with nfdump to tell it what
+ * file or range of files to use.
+ *
+ * Below ie a explanation of the layouts as taken from the NfSen config file.
+ *  0             no hierachy levels - flat layout - compatible with pre NfSen version
+ *  1 %Y/%m/%d    year/month/day
+ *  2 %Y/%m/%d/%H year/month/day/hour
+ *  3 %Y/%W/%u    year/week_of_year/day_of_week
+ *  4 %Y/%W/%u/%H year/week_of_year/day_of_week/hour
+ *  5 %Y/%j       year/day-of-year
+ *  6 %Y/%j/%H    year/day-of-year/hour
+ *  7 %Y-%m-%d    year-month-day
+ *  8 %Y-%m-%d/%H year-month-day/hour
+ */
+function time_to_nfsen_subpath($time)
+{
+    $time=lowest_time($time);
+    $layout=Config::get('nfsen_subdirlayout');
+
+    if ($layout == 0) {
+        return 'nfcapd.'.date('YmdHi', $time);
+    } elseif ($layout == 1) {
+        return date('Y\/m\/d\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 2) {
+        return date('Y\/m\/d\/H\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 3) {
+        return date('Y\/W\/w\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 4) {
+        return date('Y\/W\/w\/H\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 5) {
+        return date('Y\/z\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 6) {
+        return date('Y\/z\/H\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 7) {
+        return date('Y\-m\-d\/\n\f\c\a\p\d\.YmdHi', $time);
+    } elseif ($layout == 8) {
+        return date('Y\-m\-d\/H\/\n\f\c\a\p\d\.YmdHi', $time);
     }
+}
 
-    return $units_by_classes[$class];
+/**
+ * @params string hostname
+ * @return string
+ *
+ * Takes a hostname and transforms it to the name
+ * used by nfsen.
+*/
+function nfsen_hostname($hostname)
+{
+    $nfsen_hostname=str_replace('.', Config::get('nfsen_split_char'), $hostname);
+
+    if (!is_null(Config::get('nfsen_suffix'))) {
+        $nfsen_hostname=str_replace(Config::get('nfsen_suffix'), '', $nfsen_hostname);
+    }
+    return $nfsen_hostname;
+}
+
+/**
+ * @params string hostname
+ * @return string
+ *
+ * Takes a hostname and returns the path to the nfsen
+ * live dir.
+*/
+function nfsen_live_dir($hostname)
+{
+    $hostname=nfsen_hostname($hostname);
+
+    foreach (Config::get('nfsen_base') as $base_dir) {
+        if (file_exists($base_dir) && is_dir($base_dir)) {
+            return $base_dir.'/profiles-data/live/'.$hostname;
+        }
+    }
 }

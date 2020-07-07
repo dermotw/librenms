@@ -15,15 +15,15 @@
  * @author     LibreNMS Contributors
 */
 
-use LibreNMS\Authentication\LegacyAuth;
-
 $graph_type = 'mempool_usage';
 $where      = 1;
 $sql        = ' FROM `mempools` AS `M` LEFT JOIN `devices` AS `D` ON `M`.`device_id` = `D`.`device_id`';
-if (!LegacyAuth::user()->hasGlobalRead()) {
-    $sql    .= ' LEFT JOIN `devices_perms` AS `DP` ON `M`.`device_id` = `DP`.`device_id`';
-    $where  .= ' AND `DP`.`user_id`=?';
-    $param[] = LegacyAuth::id();
+$param      = [];
+
+if (!Auth::user()->hasGlobalRead()) {
+    $device_ids = Permissions::devicesForUser()->toArray() ?: [0];
+    $where .= " AND `D`.`device_id` IN " .dbGenPlaceholders(count($device_ids));
+    $param = array_merge($param, $device_ids);
 }
 
 $sql .= " WHERE $where";
@@ -59,8 +59,8 @@ foreach (dbFetchRows($sql, $param) as $mempool) {
     $used                  = formatStorage($mempool['mempool_used']);
     $graph_array['type']   = $graph_type;
     $graph_array['id']     = $mempool['mempool_id'];
-    $graph_array['from']   = $config['time']['day'];
-    $graph_array['to']     = $config['time']['now'];
+    $graph_array['from'] = \LibreNMS\Config::get('time.day');
+    $graph_array['to'] = \LibreNMS\Config::get('time.now');
     $graph_array['height'] = '20';
     $graph_array['width']  = '80';
     $graph_array_zoom      = $graph_array;
@@ -81,7 +81,7 @@ foreach (dbFetchRows($sql, $param) as $mempool) {
     if ($vars['view'] == 'graphs') {
         $graph_array['height'] = '100';
         $graph_array['width']  = '216';
-        $graph_array['to']     = $config['time']['now'];
+        $graph_array['to'] = \LibreNMS\Config::get('time.now');
         $graph_array['id']     = $mempool['mempool_id'];
         $graph_array['type']   = $graph_type;
         $return_data           = true;

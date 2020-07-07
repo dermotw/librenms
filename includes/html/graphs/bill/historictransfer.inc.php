@@ -29,6 +29,14 @@ for ($i = 0; $i < count($graph_data['ticklabels']); $i++) {
 $graph = new Graph($vars['width'], $vars['height'], $graph_data['graph_name']);
 $graph->img->SetImgFormat('png');
 
+// work around bug in jpgraph error handling
+$graph->title->Set(' ');
+$graph->subtitle->Set(' ');
+$graph->subsubtitle->Set(' ');
+$graph->footer->left->Set(' ');
+$graph->footer->center->Set(' ');
+$graph->footer->right->Set(' ');
+
 $graph->SetScale('textlin');
 $graph->title->SetFont(FF_FONT2, FS_BOLD, 10);
 $graph->SetMarginColor('white');
@@ -41,6 +49,7 @@ $graph->legend->Pos('0.52', '0.91', 'center');
 $graph->xaxis->SetFont(FF_FONT1, FS_BOLD);
 $graph->xaxis->SetPos('min');
 $graph->xaxis->SetTitleMargin(30);
+$graph->xaxis->title->Set(' ');
 $graph->xaxis->SetTickLabels($graph_data['ticklabels']);
 
 $graph->xgrid->Show(true, true);
@@ -48,9 +57,7 @@ $graph->xgrid->SetColor('#e0e0e0', '#efefef');
 
 function YCallback($value)
 {
-    global $config;
-
-    return format_number($value, $config['billing']['base'], 2, 1).'B';
+    return format_number($value, \LibreNMS\Config::get('billing.base'), 2, 1) . 'B';
 }
 
 $graph->yaxis->SetFont(FF_FONT1);

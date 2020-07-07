@@ -19,12 +19,22 @@
       </tr>
 <?php
 
-$poller_modules = $config['poller_modules'];
+use LibreNMS\Config;
+
+$language = \config('app.locale');
+$settings = (include Config::get('install_dir').'/resources/lang/'.$language.'/settings.php')['settings'];
+
+$attribs = get_dev_attribs($device['device_id']);
+$poller_module_names = $settings['poller_modules'];
+$discovery_module_names = $settings['discovery_modules'];
+
+$poller_modules = Config::get('poller_modules');
 ksort($poller_modules);
 foreach ($poller_modules as $module => $module_status) {
+    $module_name = $poller_module_names[$module]['description'] ?: $module;
     echo('
       <tr>
-        <td><strong>'.$module.'</strong></td>
+        <td><strong>'.$module_name.'</strong></td>
         <td>
         ');
 
@@ -38,8 +48,8 @@ foreach ($poller_modules as $module => $module_status) {
         </td>
         <td>');
 
-    if (isset($config['os'][$device['os']]['poller_modules'][$module])) {
-        if ($config['os'][$device['os']]['poller_modules'][$module]) {
+    if (Config::has("os.{$device['os']}.poller_modules.$module")) {
+        if (Config::get("os.{$device['os']}.poller_modules.$module")) {
             echo('<span class="text-success">Enabled</span>');
             $module_status = 1;
         } else {
@@ -102,13 +112,14 @@ foreach ($poller_modules as $module => $module_status) {
 
 <?php
 
-$discovery_modules = $config['discovery_modules'];
+$discovery_modules = Config::get('discovery_modules');
 ksort($discovery_modules);
 foreach ($discovery_modules as $module => $module_status) {
+    $module_name = $discovery_module_names[$module]['description'] ?: $module;
     echo('
       <tr>
         <td>
-          <strong>'.$module.'</strong>
+          <strong>'.$module_name.'</strong>
         </td>
         <td>
         ');
@@ -123,8 +134,8 @@ foreach ($discovery_modules as $module => $module_status) {
         </td>
         <td>');
 
-    if (isset($config['os'][$device['os']]['discovery_modules'][$module])) {
-        if ($config['os'][$device['os']]['discovery_modules'][$module]) {
+    if (Config::has("os.{$device['os']}.discovery_modules.$module")) {
+        if (Config::get("os.{$device['os']}.discovery_modules.$module")) {
             echo('<span class="text-success">Enabled</span>');
             $module_status = 1;
         } else {

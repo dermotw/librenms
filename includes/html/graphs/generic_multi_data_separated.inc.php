@@ -43,12 +43,12 @@ if (!isset($multiplier)) {
 }
 
 foreach ($rrd_list as $rrd) {
-    if (!$config['graph_colours'][$colours_in][$iter] || !$config['graph_colours'][$colours_out][$iter]) {
+    if (!\LibreNMS\Config::get("graph_colours.$colours_in.$iter") || !\LibreNMS\Config::get("graph_colours.$colours_out.$iter")) {
         $iter = 0;
     }
 
-    $colour_in = $config['graph_colours'][$colours_in][$iter];
-    $colour_out = $config['graph_colours'][$colours_out][$iter];
+    $colour_in = \LibreNMS\Config::get("graph_colours.$colours_in.$iter");
+    $colour_out = \LibreNMS\Config::get("graph_colours.$colours_out.$iter");
 
     if (isset($rrd['descr_in'])) {
         $descr = rrdtool_escape($rrd['descr_in'], $descr_len) . '  In';
@@ -82,22 +82,22 @@ foreach ($rrd_list as $rrd) {
     }
 
     $rrd_options .= ' AREA:inB' . $i . '#' . $colour_in . $stacked['transparency'] . ":'" . $descr . "'$stack";
-    $rrd_options .= ' GPRINT:inB' . $i . ":LAST:%6.2lf%s$units";
-    $rrd_options .= ' GPRINT:inB' . $i . ":AVERAGE:%6.2lf%s$units";
-    $rrd_options .= ' GPRINT:inB' . $i . ":MAX:%6.2lf%s$units\l";
+    $rrd_options .= ' GPRINT:inB' . $i . ":LAST:%6.".$float_precision."lf%s$units";
+    $rrd_options .= ' GPRINT:inB' . $i . ":AVERAGE:%6.".$float_precision."lf%s$units";
+    $rrd_options .= ' GPRINT:inB' . $i . ":MAX:%6.".$float_precision."lf%s$units\l";
 
     if (!$nototal) {
-        $rrd_options .= ' GPRINT:totin' . $i . ":%6.2lf%s$total_units";
+        $rrd_options .= ' GPRINT:totin' . $i . ":%6.".$float_precision."lf%s$total_units";
     }
 
     $rrd_options .= " 'HRULE:0#" . $colour_out . ':' . $descr_out . "'";
     $rrd_optionsb .= " 'AREA:outB" . $i . '_neg#' . $colour_out . $stacked['transparency'] . ":$stack'";
-    $rrd_options .= ' GPRINT:outB' . $i . ":LAST:%6.2lf%s$units";
-    $rrd_options .= ' GPRINT:outB' . $i . ":AVERAGE:%6.2lf%s$units";
-    $rrd_options .= ' GPRINT:outB' . $i . ":MAX:%6.2lf%s$units\l";
+    $rrd_options .= ' GPRINT:outB' . $i . ":LAST:%6.".$float_precision."lf%s$units";
+    $rrd_options .= ' GPRINT:outB' . $i . ":AVERAGE:%6.".$float_precision."lf%s$units";
+    $rrd_options .= ' GPRINT:outB' . $i . ":MAX:%6.".$float_precision."lf%s$units\l";
 
     if (!$nototal) {
-        $rrd_options .= ' GPRINT:totout' . $i . ":%6.2lf%s$total_units";
+        $rrd_options .= ' GPRINT:totout' . $i . ":%6.".$float_precision."lf%s$total_units";
     }
 
     $rrd_options .= " 'COMMENT:\l'";
@@ -117,9 +117,9 @@ if (!$nototal) {
     $rrd_options .= ' CDEF:inbits=inoctets,8,*';
     $rrd_options .= ' CDEF:outbits=outoctets,8,*';
     $rrd_options .= ' CDEF:doutbits=doutoctets,8,*';
-    $rrd_options .= ' VDEF:percentile_in=inbits,' . $config['percentile_value'] . ',PERCENT';
-    $rrd_options .= ' VDEF:percentile_out=outbits,' . $config['percentile_value'] . ',PERCENT';
-    $rrd_options .= ' CDEF:dpercentile_outn=doutbits,' . $stacked['stacked'] . ',* VDEF:dpercentile_outnp=dpercentile_outn,' . $config['percentile_value'] . ',PERCENT CDEF:dpercentile_outnpn=doutbits,doutbits,-,dpercentile_outnp,' . $stacked['stacked'] . ',*,+ VDEF:dpercentile_out=dpercentile_outnpn,FIRST';
+    $rrd_options .= ' VDEF:percentile_in=inbits,' . \LibreNMS\Config::get('percentile_value') . ',PERCENT';
+    $rrd_options .= ' VDEF:percentile_out=outbits,' . \LibreNMS\Config::get('percentile_value') . ',PERCENT';
+    $rrd_options .= ' CDEF:dpercentile_outn=doutbits,' . $stacked['stacked'] . ',* VDEF:dpercentile_outnp=dpercentile_outn,' . \LibreNMS\Config::get('percentile_value') . ',PERCENT CDEF:dpercentile_outnpn=doutbits,doutbits,-,dpercentile_outnp,' . $stacked['stacked'] . ',*,+ VDEF:dpercentile_out=dpercentile_outnpn,FIRST';
     $rrd_options .= ' VDEF:totin=inoctets,TOTAL';
     $rrd_options .= ' VDEF:totout=outoctets,TOTAL';
     $rrd_options .= ' VDEF:tot=octets,TOTAL';

@@ -13,7 +13,7 @@
 $init_modules = array('web', 'auth');
 require realpath(__DIR__ . '/..') . '/includes/init.php';
 
-if (is_numeric($_GET['id']) && ($config['allow_unauth_graphs'] || port_permitted($_GET['id']))) {
+if (is_numeric($_GET['id']) && (\LibreNMS\Config::get('allow_unauth_graphs') || port_permitted($_GET['id']))) {
     $port   = cleanPort(get_port_by_id($_GET['id']));
     $device = device_by_id_cache($port['device_id']);
     $title  = generate_device_link($device);
@@ -30,7 +30,7 @@ if (is_numeric($_GET['id']) && ($config['allow_unauth_graphs'] || port_permitted
         $out = snmp_get($device, 'ifOutOctets.'.$port['ifIndex'], '-OUqnv', 'IF-MIB');
     }
 
-    $time = time();
+    $time = microtime(true);
 
-    printf("%lf|%s|%s\n", time(), $in, $out);
+    printf("%lf|%s|%s\n", $time, $in, $out);
 }

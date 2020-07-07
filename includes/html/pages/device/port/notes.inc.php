@@ -16,6 +16,7 @@ $data = get_dev_attrib($device, $port_id_notes);
 ?>
 
 <form class="form-horizontal" action="" method="post">
+    <?php echo csrf_field() ?>
     <h3>Port Notes</h3>
     <hr>
     <div class="form-group">
@@ -30,7 +31,7 @@ $data = get_dev_attrib($device, $port_id_notes);
             echo '
             <button type="submit" name="btn-update-notes" id="btn-update-notes" class="btn btn-primary">Submit</button>
             ';
-?>
+            ?>
         </div>
     </div>
 </form>

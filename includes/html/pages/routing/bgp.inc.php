@@ -1,10 +1,9 @@
 <?php
 
-use LibreNMS\Authentication\LegacyAuth;
 use LibreNMS\Exceptions\InvalidIpException;
 use LibreNMS\Util\IPv6;
 
-if (!LegacyAuth::user()->hasGlobalRead()) {
+if (!Auth::user()->hasGlobalRead()) {
     include 'includes/html/error-no-perm.inc.php';
 } else {
     $link_array = array(
@@ -206,7 +205,7 @@ if (!LegacyAuth::user()->hasGlobalRead()) {
     print_optionbar_end();
 
     echo "<table border=0 cellspacing=0 cellpadding=5 width=100% class='table sortable'>";
-    echo '<tr style="height: 30px"><td width=1></td><th>Local address</th><th></th><th>Peer address</th><th>Type</th><th>Family</th><th>Remote AS</th><th>Peer description</th><th>State</th><th width=200>Uptime / Updates</th></tr>';
+    echo '<tr style="height: 30px"><td width=1></td><th>Local address</th><th></th><th>Peer address</th><th>Type</th><th>Family</th><th>Remote AS</th><th>Peer description</th><th>State</th><th>Last error</th><th width=200>Uptime / Updates</th></tr>';
 
     if ($vars['type'] == 'external') {
         $where = 'AND D.bgpLocalAs != B.bgpPeerRemoteAs';
@@ -271,8 +270,8 @@ if (!LegacyAuth::user()->hasGlobalRead()) {
         $graph_array                = array();
         $graph_array['type']        = 'bgp_updates';
         $graph_array['id']          = $peer['bgpPeer_id'];
-        $graph_array['to']          = $config['time']['now'];
-        $graph_array['from']        = $config['time']['day'];
+        $graph_array['to'] = \LibreNMS\Config::get('time.now');
+        $graph_array['from'] = \LibreNMS\Config::get('time.day');
         $graph_array['height']      = '110';
         $graph_array['width']       = $width;
 
@@ -290,6 +289,12 @@ if (!LegacyAuth::user()->hasGlobalRead()) {
         $graph_array_zoom['safi']    = 'unicast';
         $overlib_link = "device/device=".$peer['device_id']."/tab=routing/proto=bgp/";
         $localaddresslink = "<span class=list-large>".overlib_link($overlib_link, $peer_ip, generate_graph_tag($graph_array_zoom), null)."</span>";
+
+        if ($peer['bgpPeerLastErrorCode'] == 0 && $peer['bgpPeerLastErrorSubCode'] == 0) {
+            $last_error = $peer['bgpPeerLastErrorText'];
+        } else {
+            $last_error = describe_bgp_error_code($peer['bgpPeerLastErrorCode'], $peer['bgpPeerLastErrorSubCode'])."<br/>".$peer['bgpPeerLastErrorText'];
+        }
 
         echo '<tr class="bgp"'.($peer['alert'] ? ' bordercolor="#cc0000"' : '').($peer['disabled'] ? ' bordercolor="#cccccc"' : '').'>';
 
@@ -314,8 +319,9 @@ if (!LegacyAuth::user()->hasGlobalRead()) {
             <td width=50>".$peer['afi'].'</td>
             <td><strong>AS'.$peer['bgpPeerRemoteAs'].'</strong><br />'.$peer['astext']."</td>
             <td>".$peer['bgpPeerDescr']."</td>
-            <td><strong><span style='color: $admin_col;'>".$peer['bgpPeerAdminStatus']."</span><br /><span style='color: $col;'>".$peer['bgpPeerState'].'</span></strong></td>
-            <td>'.formatUptime($peer['bgpPeerFsmEstablishedTime'])."<br />
+            <td><strong><span style='color: $admin_col;'>".$peer['bgpPeerAdminStatus']."</span><br /><span style='color: $col;'>".$peer['bgpPeerState']."</span></strong></td>
+            <td>".$last_error."</td>
+            <td>".formatUptime($peer['bgpPeerFsmEstablishedTime'])."<br />
             Updates <i class='fa fa-arrow-down icon-theme' aria-hidden='true'></i> ".format_si($peer['bgpPeerInUpdates'])."
             <i class='fa fa-arrow-up icon-theme' aria-hidden='true'></i> ".format_si($peer['bgpPeerOutUpdates']).'</td></tr>';
 
@@ -355,7 +361,7 @@ if (!LegacyAuth::user()->hasGlobalRead()) {
         if ($peer['graph']) {
             $graph_array['height'] = '100';
             $graph_array['width']  = '218';
-            $graph_array['to']     = $config['time']['now'];
+            $graph_array['to'] = \LibreNMS\Config::get('time.now');
             echo '<tr></tr><tr class="bgp"'.($bg_image ? ' background="'.$bg_image.'"' : '').'"><td colspan="9">';
 
             include 'includes/html/print-graphrow.inc.php';

@@ -104,12 +104,14 @@ class Plugins
         chdir(Config::get('install_dir') . '/html');
         $plugin = self::getInstance($file, $pluginName);
 
-        $class = get_class($plugin);
-        $hooks = get_class_methods($class);
+        if (!is_null($plugin)) {
+            $class = get_class($plugin);
+            $hooks = get_class_methods($class);
 
-        foreach ((array)$hooks as $hookName) {
-            if ($hookName[0] != '_') {
-                self::$plugins[$hookName][] = $class;
+            foreach ((array)$hooks as $hookName) {
+                if ($hookName[0] != '_') {
+                    self::$plugins[$hookName][] = $class;
+                }
             }
         }
 
@@ -171,14 +173,16 @@ class Plugins
     /**
      * Call hook for plugin.
      *
-     * @param string $hook   Name of hook to call
-     * @param array  $params Optional array of parameters for hook
+     * @param string $hook Name of hook to call
+     * @param array|false $params Optional array of parameters for hook
+     * @return string
      */
     public static function call($hook, $params = false)
     {
         chdir(Config::get('install_dir') . '/html');
         self::start();
 
+        ob_start();
         if (!empty(self::$plugins[$hook])) {
             foreach (self::$plugins[$hook] as $name) {
                 try {
@@ -192,7 +196,11 @@ class Plugins
                 }
             }
         }
+        $output = ob_get_contents();
+        ob_end_clean();
+
         chdir(Config::get('install_dir'));
+        return $output;
     }
 
     /**

@@ -1,6 +1,8 @@
 <?php
 
-if ($ports['total']) {
+use LibreNMS\Util\ObjectCache;
+
+if (ObjectCache::portCounts(['total'], $device['device_id'])['total'] > 0) {
     echo '<div class="row">
           <div class="col-md-12">
             <div class="panel panel-default panel-condensed">
@@ -9,22 +11,22 @@ if ($ports['total']) {
             </div>
             <table class="table table-hover table-condensed table-striped">';
 
-    if ($_SESSION['screen_width']) {
-        if ($_SESSION['screen_width'] > 970) {
-            $graph_array['width'] = round(($_SESSION['screen_width'] - 390 )/2, 0);
+    if ($screen_width = Session::get('screen_width')) {
+        if ($screen_width > 970) {
+            $graph_array['width'] = round(($screen_width - 390 )/2, 0);
             $graph_array['height'] = round($graph_array['width'] /3);
             $graph_array['lazy_w'] = $graph_array['width'] + 80;
         } else {
-            $graph_array['width'] = $_SESSION['screen_width'] - 190;
+            $graph_array['width'] = $screen_width - 190;
             $graph_array['height'] = round($graph_array['width'] /3);
             $graph_array['lazy_w'] = $graph_array['width'] + 80;
         }
     }
 
-    $graph_array['to']     = $config['time']['now'];
+    $graph_array['to'] = \LibreNMS\Config::get('time.now');
     $graph_array['device'] = $device['device_id'];
     $graph_array['type']   = 'device_bits';
-    $graph_array['from']   = $config['time']['day'];
+    $graph_array['from'] = \LibreNMS\Config::get('time.day');
     $graph_array['legend'] = 'no';
     $graph = generate_lazy_graph_tag($graph_array);
 
@@ -45,6 +47,7 @@ if ($ports['total']) {
     echo '  </td>
         </tr>';
 
+    $ports = ObjectCache::portCounts(['total', 'up', 'down', 'disabled'], $device['device_id']);
     echo '
     <tr>
       <td><i class="fa fa-link fa-lg" style="color:black" aria-hidden="true"></i> '.$ports['total'].'</td>

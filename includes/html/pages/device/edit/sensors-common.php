@@ -19,11 +19,12 @@ echo "<h3>$title</h3>";
 ?>
 
 <form class="form-inline">
-<table class="table table-hover table-condensed table-bordered">
-  <tr class="info">
+<?php echo csrf_field() ?>
+<table class="table table-striped table-condensed table-bordered">
+  <tr>
     <th>Class</th>
     <th>Type</th>
-    <th>Desc</th>
+    <th>Description</th>
     <th>Current</th>
     <th class="col-sm-1">High</th>
     <th class="col-sm-1">High warn</th>
@@ -34,7 +35,7 @@ echo "<h3>$title</h3>";
   </tr>
 <?php
 $rollback = array();
-foreach (dbFetchRows("SELECT * FROM `$table` WHERE `device_id` = ? AND `sensor_deleted`='0'", array($device['device_id'])) as $sensor) {
+foreach (dbFetchRows("SELECT * FROM `$table` WHERE `device_id` = ? AND `sensor_deleted`='0' order by sensor_class, sensor_type, sensor_descr", array($device['device_id'])) as $sensor) {
     $rollback[] = array(
         'sensor_id'        => $sensor['sensor_id'],
         'sensor_limit'     => $sensor['sensor_limit'],
@@ -59,21 +60,21 @@ foreach (dbFetchRows("SELECT * FROM `$table` WHERE `device_id` = ? AND `sensor_d
         <tr>
         <td>'.$sensor['sensor_class'].'</td>
         <td>'.$sensor['sensor_type'].'</td>
-        <td>'.$sensor['sensor_descr'].'</td>
+        <td style="white-space: nowrap">'.$sensor['sensor_descr'].'</td>
         <td>'.$sensor['sensor_current'].'</td>
         <td>
         <div class="form-group has-feedback">
-        <input type="text" class="form-control input-sm sensor" id="high-'.$sensor['device_id'].'" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit'].'">
+        <input type="text" class="form-control col-sm-1 input-sm sensor" id="high-'.$sensor['device_id'].'" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit'].'">
         </div>
         </td>
         <td>
         <div class="form-group has-feedback">
-        <input type="text" class="form-control input-sm sensor" id="high-'.$sensor['device_id'].'-warn" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit_warn" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit_warn'].'">
+        <input type="text" class="form-control col-sm-1 input-sm sensor" id="high-'.$sensor['device_id'].'-warn" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit_warn" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit_warn'].'">
         </div>
         </td>
         <td>
         <div class="form-group has-feedback">
-        <input type="text" class="form-control input-sm sensor" id="low-'.$sensor['device_id'].'-warn" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit_low_warn" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit_low_warn'].'">
+        <input type="text" class="form-control col-sm-1 input-sm sensor" id="low-'.$sensor['device_id'].'-warn" data-device_id="'.$sensor['device_id'].'" data-value_type="sensor_limit_low_warn" data-sensor_id="'.$sensor['sensor_id'].'" value="'.$sensor['sensor_limit_low_warn'].'">
         </div>
         </td>
         <td>
@@ -85,7 +86,7 @@ foreach (dbFetchRows("SELECT * FROM `$table` WHERE `device_id` = ? AND `sensor_d
         <input type="checkbox" name="alert-status" data-device_id="'.$sensor['device_id'].'" data-sensor_id="'.$sensor['sensor_id'].'" data-sensor_desc="'.$sensor['sensor_descr'].'" '.$alert_status.'>
         </td>
         <td>
-        <a type="button" class="btn btn-danger btn-sm '.$custom.' remove-custom" id="remove-custom" name="remove-custom" data-sensor_id="'.$sensor['sensor_id'].'">Clear custom</a>
+        <a type="button" class="btn btn-danger btn-sm '.$custom.' remove-custom" id="remove-custom" name="remove-custom" data-sensor_id="'.$sensor['sensor_id'].'">Reset</a>
         </td>
         </tr>
         ';
@@ -95,6 +96,7 @@ foreach (dbFetchRows("SELECT * FROM `$table` WHERE `device_id` = ? AND `sensor_d
 </form>
 <form id="alert-reset">
 <?php
+echo csrf_field();
 foreach ($rollback as $reset_data) {
     echo '
         <input type="hidden" name="sensor_id[]" value="'.$reset_data['sensor_id'].'">
