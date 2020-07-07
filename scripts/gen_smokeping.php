@@ -16,8 +16,9 @@ require realpath(__DIR__ . '/..') . '/includes/init.php';
 
 ?>
 
-menu = Top
-title = Network Latency Grapher
++ LibreNMS
+menu = LibreNMS
+title = LibreNMS Managed Nodes
 
 <?php
 
